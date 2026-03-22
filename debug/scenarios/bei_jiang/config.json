@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "task_request": {
+    "name": "北江超标准洪水调度",
+    "goal_peak_limit_m3s": 19000,
+    "notes": "调试场景：仅用于验证Agent链路与输出落盘"
+  }
+}
+

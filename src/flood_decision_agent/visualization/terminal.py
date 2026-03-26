@@ -104,6 +104,8 @@ class TerminalVisualizer(BaseVisualizer):
         use_unicode: bool = True,
         show_timestamps: bool = False,
         indent_size: int = 2,
+        silent: bool = False,
+        stream_callback=None,
     ):
         """初始化终端可视化器.
 
@@ -113,6 +115,8 @@ class TerminalVisualizer(BaseVisualizer):
             use_unicode: 是否使用 Unicode 字符，默认 True
             show_timestamps: 是否显示时间戳，默认 False
             indent_size: 缩进大小，默认 2
+            silent: 是否静默模式（不输出到控制台），默认 False
+            stream_callback: 流式输出回调函数，用于将输出转发到前端
         """
         super().__init__(enabled)
         self.use_colors = use_colors and self._supports_colors()
@@ -120,6 +124,8 @@ class TerminalVisualizer(BaseVisualizer):
         self.show_timestamps = show_timestamps
         self.indent_size = indent_size
         self._line_count = 0  # 已输出行数，用于动态刷新
+        self.silent = silent
+        self.stream_callback = stream_callback
 
     def _supports_colors(self) -> bool:
         """检测终端是否支持颜色.
@@ -200,6 +206,12 @@ class TerminalVisualizer(BaseVisualizer):
             end: 行尾字符
             flush: 是否立即刷新
         """
+        # 静默模式下不输出到控制台，但如果有回调则转发
+        if self.silent:
+            if self.stream_callback and text:
+                self.stream_callback(text)
+            return
+
         print(text, end=end, flush=flush)
         if end == "\n":
             self._line_count += 1

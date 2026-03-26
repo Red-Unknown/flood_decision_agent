@@ -1,0 +1,18 @@
+# 开发环境配置
+
+app:
+  debug: true
+
+# LLM 配置
+llm:
+  temperature: 0.8
+  timeout: 120
+
+# 日志配置
+logging:
+  level: "DEBUG"
+  file: "logs/app_dev.log"
+
+# 管道配置
+pipeline:
+  enable_visualization: true

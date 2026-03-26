@@ -4,6 +4,10 @@ scikit-learn>=1.4
 jupyter>=1.0
 loguru>=0.7
 
+# MCP 依赖
+mcp>=1.26.0
+python-docx>=1.1.0
+
 pytest>=8.0
 pytest-cov>=5.0
 

@@ -1,0 +1,52 @@
+# MCP 服务器配置
+
+mcp_servers:
+  filesystem:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.filesystem_server"
+    env:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "文件系统操作服务 - 规划文件读写"
+    enabled: true
+
+  hydrology:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.hydrology_server"
+    env:
+      PYTHONPATH: "."
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "水利模型服务 - 降雨径流、洪水演进、水库调度"
+    enabled: true
+
+  document:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.document_server"
+    env:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "文档处理服务 - docx转markdown、文档内容提取"
+    enabled: true
+
+  sqlite:
+    command: uvx
+    args:
+      - "mcp-server-sqlite"
+      - "--db-path"
+      - "./data/flood_data.db"
+    env: {}
+    description: "SQLite 数据库服务（可选）"
+    enabled: false
+
+settings:
+  auto_connect: true
+  connection_timeout: 30
+  retry_attempts: 3
+  log_level: "info"

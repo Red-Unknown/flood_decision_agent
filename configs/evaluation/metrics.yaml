@@ -1,0 +1,45 @@
+# 评估指标配置
+
+metrics:
+  # 准确性指标
+  accuracy:
+    enabled: true
+    weight: 0.3
+    threshold: 0.8
+
+  # 相关性指标
+  relevance:
+    enabled: true
+    weight: 0.25
+    threshold: 0.7
+
+  # 完整性指标
+  completeness:
+    enabled: true
+    weight: 0.2
+    threshold: 0.75
+
+  # 一致性指标
+  consistency:
+    enabled: true
+    weight: 0.15
+    threshold: 0.8
+
+  # 延迟指标
+  latency:
+    enabled: true
+    weight: 0.1
+    threshold: 5.0  # 秒
+
+# 评分配置
+scoring:
+  method: "weighted_average"  # weighted_average, geometric_mean, harmonic_mean
+  normalize: true
+  scale: 100  # 0-100
+
+# 阈值配置
+thresholds:
+  excellent: 90
+  good: 75
+  acceptable: 60
+  poor: 40

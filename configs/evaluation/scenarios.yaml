@@ -1,0 +1,49 @@
+# 评估场景配置
+
+scenarios:
+  # 洪水调度场景
+  flood_dispatch:
+    name: "洪水调度决策"
+    description: "测试洪水调度决策的准确性和完整性"
+    enabled: true
+    priority: high
+    test_cases:
+      - "test_case_001"
+      - "test_case_002"
+      - "test_case_003"
+
+  # 节点调度场景
+  node_scheduling:
+    name: "节点调度优化"
+    description: "测试节点调度算法的效率和准确性"
+    enabled: true
+    priority: high
+    test_cases:
+      - "test_case_004"
+      - "test_case_005"
+
+  # 任务执行场景
+  task_execution:
+    name: "任务执行"
+    description: "测试单元任务执行的正确性"
+    enabled: true
+    priority: medium
+    test_cases:
+      - "test_case_006"
+      - "test_case_007"
+
+  # 对话场景
+  conversation:
+    name: "多轮对话"
+    description: "测试多轮对话的上下文保持能力"
+    enabled: true
+    priority: medium
+    test_cases:
+      - "test_case_008"
+
+# 场景执行配置
+execution:
+  parallel: true
+  max_workers: 4
+  timeout: 300  # 5分钟
+  retry_failed: true

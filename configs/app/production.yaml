@@ -1,0 +1,27 @@
+# 生产环境配置
+
+app:
+  debug: false
+
+# LLM 配置
+llm:
+  temperature: 0.5
+  timeout: 60
+  retry:
+    max_attempts: 5
+
+# 日志配置
+logging:
+  level: "WARNING"
+  file: "/var/log/flood_decision_agent/app.log"
+
+# 对话配置
+conversation:
+  max_history: 100
+  session_timeout: 7200  # 2小时
+
+# 管道配置
+pipeline:
+  max_iterations: 20
+  timeout: 600  # 10分钟
+  enable_visualization: false

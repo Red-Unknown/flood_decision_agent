@@ -1,0 +1,47 @@
+# MCP 工具配置
+
+tools:
+  # 文件系统工具
+  filesystem:
+    prefix: "fs"
+    tools:
+      - name: "read_file"
+        description: "读取文件内容"
+        enabled: true
+      - name: "write_file"
+        description: "写入文件内容"
+        enabled: true
+      - name: "list_directory"
+        description: "列出目录内容"
+        enabled: true
+
+  # 水文工具
+  hydrology:
+    prefix: "hydro"
+    tools:
+      - name: "rainfall_runoff"
+        description: "降雨径流计算"
+        enabled: true
+      - name: "flood_routing"
+        description: "洪水演进计算"
+        enabled: true
+      - name: "reservoir_dispatch"
+        description: "水库调度计算"
+        enabled: true
+
+  # 文档工具
+  document:
+    prefix: "doc"
+    tools:
+      - name: "docx_to_markdown"
+        description: "docx转markdown"
+        enabled: true
+      - name: "extract_content"
+        description: "提取文档内容"
+        enabled: true
+
+# 工具适配器配置
+adapters:
+  auto_register: true
+  cache_enabled: true
+  cache_ttl: 300  # 5分钟

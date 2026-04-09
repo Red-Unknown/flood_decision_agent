@@ -1,0 +1,87 @@
+{
+  "test_id": "test_8c3e2d64",
+  "test_input": "调研当前金坛降雨情况",
+  "start_time": "2026-04-07T20:53:31.816400",
+  "end_time": "2026-04-07T20:54:31.917645",
+  "total_duration_ms": 60101.244999999995,
+  "messages": [
+    {
+      "direction": "sent",
+      "message_type": "chat_message",
+      "timestamp": "2026-04-07T20:53:31.911671",
+      "elapsed_ms": 95.271,
+      "size_bytes": 75,
+      "data_preview": {
+        "type": "chat_message",
+        "content": "调研当前金坛降雨情况",
+        "conversation_id": "test_8c3e2d64",
+        "timestamp": 1775566411.9117002
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "connected",
+      "timestamp": "2026-04-07T20:53:31.912129",
+      "elapsed_ms": 95.729,
+      "size_bytes": 80,
+      "data_preview": {
+        "type": "connected",
+        "conversation_id": "test_001",
+        "timestamp": 1775566411.9103215
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "error",
+      "timestamp": "2026-04-07T20:53:31.912516",
+      "elapsed_ms": 96.116,
+      "size_bytes": 102,
+      "data_preview": {
+        "type": "error",
+        "code": "UNKNOWN_MESSAGE_TYPE",
+        "message": "未知的消息类型: chat",
+        "timestamp": 1775566411.912201
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stage_name": "连接建立",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "消息处理",
+      "duration_ms": 20,
+      "message_count": 2
+    }
+  ],
+  "errors": [
+    {
+      "error": "Timeout",
+      "timestamp": "2026-04-07T20:54:31.916041"
+    }
+  ],
+  "summary": {
+    "total_messages": 3,
+    "sent_messages": 1,
+    "received_messages": 2,
+    "message_type_distribution": {
+      "chat_message": 1,
+      "connected": 1,
+      "error": 1
+    },
+    "stage_timings": {
+      "消息处理": {
+        "first_seen_at_ms": 95.271,
+        "message_count": 2
+      },
+      "连接建立": {
+        "first_seen_at_ms": 95.729,
+        "message_count": 1
+      }
+    },
+    "total_data_received_bytes": 257,
+    "has_errors": true
+  }
+}

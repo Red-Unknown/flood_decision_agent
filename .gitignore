@@ -39,6 +39,10 @@ env/
 # Environment variables
 .env
 .env.local
+.env.*.local
+configs/.env.local
+configs/.env.*.local
+*.env
 
 # Logs
 logs/

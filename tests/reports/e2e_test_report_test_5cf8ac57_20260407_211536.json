@@ -1,0 +1,852 @@
+{
+  "test_id": "test_5cf8ac57",
+  "test_input": "分析金坛降雨情况",
+  "start_time": "2026-04-07T21:15:14.371179",
+  "end_time": "2026-04-07T21:15:36.798519",
+  "total_duration_ms": 22427.34,
+  "messages": [
+    {
+      "direction": "sent",
+      "message_type": "chat_message",
+      "timestamp": "2026-04-07T21:15:14.467647",
+      "elapsed_ms": 96.468,
+      "size_bytes": 78,
+      "data_preview": {
+        "type": "chat_message",
+        "content": "分析金坛降雨情况",
+        "conversation_id": "test_5cf8ac57",
+        "timestamp": 1775567714.4676874
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "connected",
+      "timestamp": "2026-04-07T21:15:14.468594",
+      "elapsed_ms": 97.415,
+      "size_bytes": 79,
+      "data_preview": {
+        "type": "connected",
+        "conversation_id": "test_001",
+        "timestamp": 1775567714.465677
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "user_message_confirm",
+      "timestamp": "2026-04-07T21:15:14.469051",
+      "elapsed_ms": 97.872,
+      "size_bytes": 83,
+      "data_preview": {
+        "type": "user_message_confirm",
+        "content": "分析金坛降雨情况",
+        "timestamp": 1775567714.4685926
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:15.375894",
+      "elapsed_ms": 1004.715,
+      "size_bytes": 117,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "intent_parsing",
+        "stage_name": "意图解析",
+        "progress": 0.1,
+        "message": "正在解析用户意图..."
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "intent_parsed",
+      "timestamp": "2026-04-07T21:15:17.984822",
+      "elapsed_ms": 3613.643,
+      "size_bytes": 166,
+      "data_preview": {
+        "type": "intent_parsed",
+        "intent": {
+          "task_type": "data_query",
+          "goal": {
+            "description": "分析金坛降雨情况",
+            "station": "金坛",
+            "time_range": "unknown"
+          },
+          "constraints": {}
+        },
+        "confidence": 0.8
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.985748",
+      "elapsed_ms": 3614.569,
+      "size_bytes": 131,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "task_decomposition",
+        "stage_name": "任务分解",
+        "progress": 0.3,
+        "message": "正在分解任务...",
+        "data": null
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.986396",
+      "elapsed_ms": 3615.217,
+      "size_bytes": 299,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "task_decomposition",
+        "stage_name": "任务分解",
+        "progress": 0.4,
+        "message": "任务分解完成，共 3 个任务",
+        "data": {
+          "task_count": 3,
+          "tasks": [
+            {
+              "id": "data_query_000",
+              "type": "data_collection"
+            },
+            {
+              "id": "data_query_001",
+              "type": "data_processing"
+            },
+            {
+              "id": "data_query_002",
+              "type": "reporting"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.987055",
+      "elapsed_ms": 3615.876,
+      "size_bytes": 133,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "chain_optimization",
+        "stage_name": "决策链优化",
+        "progress": 0.5,
+        "message": "正在优化任务链...",
+        "data": null
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.991532",
+      "elapsed_ms": 3620.353,
+      "size_bytes": 229,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "chain_optimization",
+        "stage_name": "决策链优化",
+        "progress": 0.6,
+        "message": "链路优化完成，可靠性评分: 1.00",
+        "data": {
+          "reliability_score": 1.0,
+          "optimization_log": [
+            "迭代 1: 可靠性评分 = 1.00, 问题数 = 0",
+            "最终可靠性评分: 1.00"
+          ]
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.991985",
+      "elapsed_ms": 3620.806,
+      "size_bytes": 134,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "task_graph_building",
+        "stage_name": "任务图构建",
+        "progress": 0.7,
+        "message": "正在构建任务图...",
+        "data": null
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:15:17.992592",
+      "elapsed_ms": 3621.413,
+      "size_bytes": 166,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "task_graph_building",
+        "stage_name": "任务图构建",
+        "progress": 0.8,
+        "message": "任务图构建完成，共 3 个节点",
+        "data": {
+          "node_count": 3,
+          "edge_count": 2
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_graph_generated",
+      "timestamp": "2026-04-07T21:15:17.997846",
+      "elapsed_ms": 3626.667,
+      "size_bytes": 450,
+      "data_preview": {
+        "type": "task_graph_generated",
+        "tasks": [
+          {
+            "task_id": "data_query_000",
+            "task_name": "data_query_000",
+            "task_type": "data_collection",
+            "dependencies": [],
+            "status": "pending"
+          },
+          {
+            "task_id": "data_query_001",
+            "task_name": "data_query_001",
+            "task_type": "data_processing",
+            "dependencies": [],
+            "status": "pending"
+          },
+          {
+            "task_id": "data_query_002",
+            "task_name": "data_query_002",
+            "task_type": "reporting",
+            "dependencies": [],
+            "status": "pending"
+          }
+        ],
+        "total_count": 3,
+        "reliability_score": 1.0
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generated",
+      "timestamp": "2026-04-07T21:15:17.998034",
+      "elapsed_ms": 3626.855,
+      "size_bytes": 1379,
+      "data_preview": {
+        "type": "chain_generated",
+        "generation_id": "gen_test_001_1775567717",
+        "mode": "normal",
+        "task_graph": {
+          "tasks": [
+            {
+              "task_id": "data_query_000",
+              "task_name": "data_query_000",
+              "task_type": "data_collection",
+              "dependencies": [],
+              "status": "pending"
+            },
+            {
+              "task_id": "data_query_001",
+              "task_name": "data_query_001",
+              "task_type": "data_processing",
+              "dependencies": [],
+              "status": "pending"
+            },
+            {
+              "task_id": "data_query_002",
+              "task_name": "data_query_002",
+              "task_type": "reporting",
+              "dependencies": [],
+              "status": "pending"
+            }
+          ],
+          "nodes": [
+            {
+              "task_id": "data_query_000",
+              "task_name": "data_query_000",
+              "task_type": "data_collection",
+              "dependencies": [],
+              "status": "pending"
+            },
+            {
+              "task_id": "data_query_001",
+              "task_name": "data_query_001",
+              "task_type": "data_processing",
+              "dependencies": [],
+              "status": "pending"
+            },
+            {
+              "task_id": "data_query_002",
+              "task_name": "data_query_002",
+              "task_type": "reporting",
+              "dependencies": [],
+              "status": "pending"
+            }
+          ],
+          "edges": [
+            {
+              "from": "data_query_001",
+              "to": "data_query_000"
+            },
+            {
+              "from": "data_query_002",
+              "to": "data_query_001"
+            }
+          ]
+        },
+        "reliability_score": 1.0,
+        "metadata": {
+          "input": "分析金坛降雨情况",
+          "input_type": "natural_language",
+          "mode": "normal",
+          "intent": {
+            "task_type": "data_query",
+            "goal": {
+              "description": "分析金坛降雨情况",
+              "station": "金坛",
+              "time_range": "unknown"
+            }
+          },
+          "decomposition": {
+            "node_count": 3
+          },
+          "optimization": {
+            "reliability_score": 1.0,
+            "log": [
+              "迭代 1: 可靠性评分 = 1.00, 问题数 = 0",
+              "最终可靠性评分: 1.00"
+            ]
+          },
+          "task_graph": {
+            "node_count": 3,
+            "edge_count": 2
+          }
+        },
+        "timestamp": 1775567717.9927619
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "execution_started",
+      "timestamp": "2026-04-07T21:15:17.998132",
+      "elapsed_ms": 3626.953,
+      "size_bytes": 86,
+      "data_preview": {
+        "type": "execution_started",
+        "execution_id": "exec_test_001_1775567717",
+        "total_tasks": 3
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:17.998272",
+      "elapsed_ms": 3627.093,
+      "size_bytes": 287,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_000",
+        "friendly_task_name": "数据查询 #000",
+        "task_type": "",
+        "friendly_task_type": "",
+        "status": "running",
+        "result": null,
+        "error": null,
+        "duration_ms": null,
+        "detail": {
+          "stage": "executing",
+          "message": "开始执行任务 data_query_000...",
+          "progress": 0.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:22.025158",
+      "elapsed_ms": 7653.978999999999,
+      "size_bytes": 714,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_000",
+        "friendly_task_name": "数据获取 #000",
+        "task_type": "data_collection",
+        "friendly_task_type": "数据获取",
+        "status": "completed",
+        "result": {
+          "node_id": "data_query_000",
+          "task_type": "data_collection",
+          "status": "success",
+          "output": {
+            "current_time": "2026-04-07T21:15:21.189743",
+            "timestamp": 1775567721.1897628,
+            "date": "2026-04-07"
+          },
+          "metrics": {
+            "elapsed_time_ms": 439.75043296813965,
+            "tools_used": [
+              "get_current_time",
+              "query_data_pool",
+              "list_data_pool_keys",
+              "get_current_rainfall",
+              "get_hourly_rainfall"
+            ],
+            "execution_strategy": "parallel",
+            "tool_count": 5
+          }
+        },
+        "error": null,
+        "duration_ms": 439.75043296813965,
+        "detail": {
+          "stage": "completed",
+          "message": "任务 data_query_000 执行完成",
+          "progress": 1.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "execution_progress",
+      "timestamp": "2026-04-07T21:15:22.026123",
+      "elapsed_ms": 7654.944,
+      "size_bytes": 95,
+      "data_preview": {
+        "type": "execution_progress",
+        "completed_tasks": 1,
+        "total_tasks": 3,
+        "progress": 0.3333333333333333
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:22.026283",
+      "elapsed_ms": 7655.103999999999,
+      "size_bytes": 287,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_001",
+        "friendly_task_name": "数据查询 #001",
+        "task_type": "",
+        "friendly_task_type": "",
+        "status": "running",
+        "result": null,
+        "error": null,
+        "duration_ms": null,
+        "detail": {
+          "stage": "executing",
+          "message": "开始执行任务 data_query_001...",
+          "progress": 0.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:22.031348",
+      "elapsed_ms": 7660.169,
+      "size_bytes": 668,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_001",
+        "friendly_task_name": "数据分析 #001",
+        "task_type": "data_processing",
+        "friendly_task_type": "数据分析",
+        "status": "completed",
+        "result": {
+          "node_id": "data_query_001",
+          "task_type": "data_processing",
+          "status": "success",
+          "output": {
+            "current_time": "2026-04-07T21:15:22.028661",
+            "timestamp": 1775567722.028672,
+            "date": "2026-04-07"
+          },
+          "metrics": {
+            "elapsed_time_ms": 0.9076595306396484,
+            "tools_used": [
+              "get_current_time",
+              "query_data_pool",
+              "list_data_pool_keys"
+            ],
+            "execution_strategy": "parallel",
+            "tool_count": 3
+          }
+        },
+        "error": null,
+        "duration_ms": 0.9076595306396484,
+        "detail": {
+          "stage": "completed",
+          "message": "任务 data_query_001 执行完成",
+          "progress": 1.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "execution_progress",
+      "timestamp": "2026-04-07T21:15:22.032309",
+      "elapsed_ms": 7661.13,
+      "size_bytes": 95,
+      "data_preview": {
+        "type": "execution_progress",
+        "completed_tasks": 2,
+        "total_tasks": 3,
+        "progress": 0.6666666666666666
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:22.032472",
+      "elapsed_ms": 7661.293,
+      "size_bytes": 287,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_002",
+        "friendly_task_name": "数据查询 #002",
+        "task_type": "",
+        "friendly_task_type": "",
+        "status": "running",
+        "result": null,
+        "error": null,
+        "duration_ms": null,
+        "detail": {
+          "stage": "executing",
+          "message": "开始执行任务 data_query_002...",
+          "progress": 0.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "task_update",
+      "timestamp": "2026-04-07T21:15:22.036039",
+      "elapsed_ms": 7664.86,
+      "size_bytes": 657,
+      "data_preview": {
+        "type": "task_update",
+        "task_id": "data_query_002",
+        "friendly_task_name": "生成报告 #002",
+        "task_type": "reporting",
+        "friendly_task_type": "生成报告",
+        "status": "completed",
+        "result": {
+          "node_id": "data_query_002",
+          "task_type": "reporting",
+          "status": "success",
+          "output": {
+            "current_time": "2026-04-07T21:15:22.033812",
+            "timestamp": 1775567722.0338197,
+            "date": "2026-04-07"
+          },
+          "metrics": {
+            "elapsed_time_ms": 0.8111000061035156,
+            "tools_used": [
+              "get_current_time",
+              "query_data_pool",
+              "list_data_pool_keys"
+            ],
+            "execution_strategy": "parallel",
+            "tool_count": 3
+          }
+        },
+        "error": null,
+        "duration_ms": 0.8111000061035156,
+        "detail": {
+          "stage": "completed",
+          "message": "任务 data_query_002 执行完成",
+          "progress": 1.0,
+          "modalities": null
+        }
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "execution_progress",
+      "timestamp": "2026-04-07T21:15:36.797409",
+      "elapsed_ms": 22426.23,
+      "size_bytes": 80,
+      "data_preview": {
+        "type": "execution_progress",
+        "completed_tasks": 3,
+        "total_tasks": 3,
+        "progress": 1.0
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "execution_complete",
+      "timestamp": "2026-04-07T21:15:36.797709",
+      "elapsed_ms": 22426.53,
+      "size_bytes": 2369,
+      "data_preview": {
+        "type": "execution_complete",
+        "success": true,
+        "summary": {
+          "total_tasks": 3,
+          "completed_tasks": 3,
+          "failed_tasks": 0,
+          "task_results": [
+            {
+              "node_id": "data_query_000",
+              "task_type": "data_collection",
+              "status": "success",
+              "output": {
+                "current_time": "2026-04-07T21:15:21.189743",
+                "timestamp": 1775567721.1897628,
+                "date": "2026-04-07"
+              },
+              "metrics": {
+                "elapsed_time_ms": 439.75043296813965,
+                "tools_used": [
+                  "get_current_time",
+                  "query_data_pool",
+                  "list_data_pool_keys",
+                  "get_current_rainfall",
+                  "get_hourly_rainfall"
+                ],
+                "execution_strategy": "parallel",
+                "tool_count": 5
+              }
+            },
+            {
+              "node_id": "data_query_001",
+              "task_type": "data_processing",
+              "status": "success",
+              "output": {
+                "current_time": "2026-04-07T21:15:22.028661",
+                "timestamp": 1775567722.028672,
+                "date": "2026-04-07"
+              },
+              "metrics": {
+                "elapsed_time_ms": 0.9076595306396484,
+                "tools_used": [
+                  "get_current_time",
+                  "query_data_pool",
+                  "list_data_pool_keys"
+                ],
+                "execution_strategy": "parallel",
+                "tool_count": 3
+              }
+            },
+            {
+              "node_id": "data_query_002",
+              "task_type": "reporting",
+              "status": "success",
+              "output": {
+                "current_time": "2026-04-07T21:15:22.033812",
+                "timestamp": 1775567722.0338197,
+                "date": "2026-04-07"
+              },
+              "metrics": {
+                "elapsed_time_ms": 0.8111000061035156,
+                "tools_used": [
+                  "get_current_time",
+                  "query_data_pool",
+                  "list_data_pool_keys"
+                ],
+                "execution_strategy": "parallel",
+                "tool_count": 3
+              }
+            }
+          ]
+        },
+        "results": [
+          {
+            "node_id": "data_query_000",
+            "task_type": "data_collection",
+            "status": "success",
+            "output": {
+              "current_time": "2026-04-07T21:15:21.189743",
+              "timestamp": 1775567721.1897628,
+              "date": "2026-04-07"
+            },
+            "metrics": {
+              "elapsed_time_ms": 439.75043296813965,
+              "tools_used": [
+                "get_current_time",
+                "query_data_pool",
+                "list_data_pool_keys",
+                "get_current_rainfall",
+                "get_hourly_rainfall"
+              ],
+              "execution_strategy": "parallel",
+              "tool_count": 5
+            }
+          },
+          {
+            "node_id": "data_query_001",
+            "task_type": "data_processing",
+            "status": "success",
+            "output": {
+              "current_time": "2026-04-07T21:15:22.028661",
+              "timestamp": 1775567722.028672,
+              "date": "2026-04-07"
+            },
+            "metrics": {
+              "elapsed_time_ms": 0.9076595306396484,
+              "tools_used": [
+                "get_current_time",
+                "query_data_pool",
+                "list_data_pool_keys"
+              ],
+              "execution_strategy": "parallel",
+              "tool_count": 3
+            }
+          },
+          {
+            "node_id": "data_query_002",
+            "task_type": "reporting",
+            "status": "success",
+            "output": {
+              "current_time": "2026-04-07T21:15:22.033812",
+              "timestamp": 1775567722.0338197,
+              "date": "2026-04-07"
+            },
+            "metrics": {
+              "elapsed_time_ms": 0.8111000061035156,
+              "tools_used": [
+                "get_current_time",
+                "query_data_pool",
+                "list_data_pool_keys"
+              ],
+              "execution_strategy": "parallel",
+              "tool_count": 3
+            }
+          }
+        ],
+        "timestamp": 1775567722.0359995
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stage_name": "连接建立",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "消息处理",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "用户消息确认",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "决策链生成",
+      "duration_ms": 70,
+      "message_count": 7
+    },
+    {
+      "stage_name": "意图解析",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "任务图生成",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "决策链生成完成",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "执行开始",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "任务更新",
+      "duration_ms": 60,
+      "message_count": 6
+    },
+    {
+      "stage_name": "执行进度",
+      "duration_ms": 30,
+      "message_count": 3
+    },
+    {
+      "stage_name": "执行完成",
+      "duration_ms": 10,
+      "message_count": 1
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "total_messages": 24,
+    "sent_messages": 1,
+    "received_messages": 23,
+    "message_type_distribution": {
+      "chat_message": 1,
+      "connected": 1,
+      "user_message_confirm": 1,
+      "chain_generation_stage": 7,
+      "intent_parsed": 1,
+      "task_graph_generated": 1,
+      "chain_generated": 1,
+      "execution_started": 1,
+      "task_update": 6,
+      "execution_progress": 3,
+      "execution_complete": 1
+    },
+    "stage_timings": {
+      "消息处理": {
+        "first_seen_at_ms": 96.468,
+        "message_count": 1
+      },
+      "连接建立": {
+        "first_seen_at_ms": 97.415,
+        "message_count": 1
+      },
+      "用户消息确认": {
+        "first_seen_at_ms": 97.872,
+        "message_count": 1
+      },
+      "决策链生成": {
+        "first_seen_at_ms": 1004.715,
+        "message_count": 7
+      },
+      "意图解析": {
+        "first_seen_at_ms": 3613.643,
+        "message_count": 1
+      },
+      "任务图生成": {
+        "first_seen_at_ms": 3626.667,
+        "message_count": 1
+      },
+      "决策链生成完成": {
+        "first_seen_at_ms": 3626.855,
+        "message_count": 1
+      },
+      "执行开始": {
+        "first_seen_at_ms": 3626.953,
+        "message_count": 1
+      },
+      "任务更新": {
+        "first_seen_at_ms": 3627.093,
+        "message_count": 6
+      },
+      "执行进度": {
+        "first_seen_at_ms": 7654.944,
+        "message_count": 3
+      },
+      "执行完成": {
+        "first_seen_at_ms": 22426.53,
+        "message_count": 1
+      }
+    },
+    "total_data_received_bytes": 9069,
+    "has_errors": false
+  }
+}

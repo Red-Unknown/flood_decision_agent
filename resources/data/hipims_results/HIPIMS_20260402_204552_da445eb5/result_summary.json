@@ -1,0 +1,46 @@
+{
+  "simulation_id": "HIPIMS_20260402_204552_da445eb5",
+  "status": "running",
+  "start_time": "2026-04-02T20:45:52.868588",
+  "end_time": null,
+  "max_water_depth": 0.34488271444832347,
+  "max_velocity": 4.791448610693106,
+  "inundation_area": 1000000.0,
+  "inundation_extent": {
+    "total_area": 1000000.0,
+    "levels": {
+      "minor": {
+        "depth_range": [
+          0.1,
+          0.3
+        ],
+        "area": 0.0,
+        "percentage": 0.0
+      },
+      "moderate": {
+        "depth_range": [
+          0.3,
+          0.8
+        ],
+        "area": 1000000.0,
+        "percentage": 100.0
+      },
+      "major": {
+        "depth_range": [
+          0.8,
+          1.5
+        ],
+        "area": 0.0,
+        "percentage": 0.0
+      },
+      "extreme": {
+        "depth_range": [
+          1.5,
+          "inf"
+        ],
+        "area": 0.0,
+        "percentage": 0.0
+      }
+    }
+  }
+}

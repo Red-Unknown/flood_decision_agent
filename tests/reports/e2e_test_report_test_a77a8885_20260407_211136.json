@@ -1,0 +1,130 @@
+{
+  "test_id": "test_a77a8885",
+  "test_input": "分析金坛降雨情况",
+  "start_time": "2026-04-07T21:11:34.542998",
+  "end_time": "2026-04-07T21:11:36.501494",
+  "total_duration_ms": 1958.496,
+  "messages": [
+    {
+      "direction": "sent",
+      "message_type": "chat_message",
+      "timestamp": "2026-04-07T21:11:34.645534",
+      "elapsed_ms": 102.536,
+      "size_bytes": 78,
+      "data_preview": {
+        "type": "chat_message",
+        "content": "分析金坛降雨情况",
+        "conversation_id": "test_a77a8885",
+        "timestamp": 1775567494.6455634
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "connected",
+      "timestamp": "2026-04-07T21:11:34.646195",
+      "elapsed_ms": 103.197,
+      "size_bytes": 79,
+      "data_preview": {
+        "type": "connected",
+        "conversation_id": "test_001",
+        "timestamp": 1775567494.644095
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "user_message_confirm",
+      "timestamp": "2026-04-07T21:11:34.646456",
+      "elapsed_ms": 103.458,
+      "size_bytes": 83,
+      "data_preview": {
+        "type": "user_message_confirm",
+        "content": "分析金坛降雨情况",
+        "timestamp": 1775567494.6460557
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "chain_generation_stage",
+      "timestamp": "2026-04-07T21:11:35.451262",
+      "elapsed_ms": 908.264,
+      "size_bytes": 117,
+      "data_preview": {
+        "type": "chain_generation_stage",
+        "stage": "intent_parsing",
+        "stage_name": "意图解析",
+        "progress": 0.1,
+        "message": "正在解析用户意图..."
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "error",
+      "timestamp": "2026-04-07T21:11:36.500269",
+      "elapsed_ms": 1957.271,
+      "size_bytes": 316,
+      "data_preview": {
+        "type": "error",
+        "code": "GENERATION_FAILED",
+        "message": "意图解析失败: LLM 解析失败: Error code: 401 - {'error': {'message': 'Invalid Authentication', 'type': 'invalid_authentication_error'}}",
+        "data": {
+          "error": "LLM 解析失败: Error code: 401 - {'error': {'message': 'Invalid Authentication', 'type': 'invalid_authentication_error'}}"
+        }
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stage_name": "连接建立",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "消息处理",
+      "duration_ms": 20,
+      "message_count": 2
+    },
+    {
+      "stage_name": "用户消息确认",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "决策链生成",
+      "duration_ms": 10,
+      "message_count": 1
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "total_messages": 5,
+    "sent_messages": 1,
+    "received_messages": 4,
+    "message_type_distribution": {
+      "chat_message": 1,
+      "connected": 1,
+      "user_message_confirm": 1,
+      "chain_generation_stage": 1,
+      "error": 1
+    },
+    "stage_timings": {
+      "消息处理": {
+        "first_seen_at_ms": 102.536,
+        "message_count": 2
+      },
+      "连接建立": {
+        "first_seen_at_ms": 103.197,
+        "message_count": 1
+      },
+      "用户消息确认": {
+        "first_seen_at_ms": 103.458,
+        "message_count": 1
+      },
+      "决策链生成": {
+        "first_seen_at_ms": 908.264,
+        "message_count": 1
+      }
+    },
+    "total_data_received_bytes": 673,
+    "has_errors": false
+  }
+}

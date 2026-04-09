@@ -1,0 +1,82 @@
+{
+  "test_id": "test_249e39ec",
+  "test_input": "调研当前金坛降雨情况",
+  "start_time": "2026-04-07T20:57:37.616006",
+  "end_time": "2026-04-07T20:57:37.712376",
+  "total_duration_ms": 96.36999999999999,
+  "messages": [
+    {
+      "direction": "sent",
+      "message_type": "chat_message",
+      "timestamp": "2026-04-07T20:57:37.709271",
+      "elapsed_ms": 93.265,
+      "size_bytes": 83,
+      "data_preview": {
+        "type": "chat_message",
+        "content": "调研当前金坛降雨情况",
+        "conversation_id": "test_249e39ec",
+        "timestamp": 1775566657.7093112
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "connected",
+      "timestamp": "2026-04-07T20:57:37.710370",
+      "elapsed_ms": 94.364,
+      "size_bytes": 80,
+      "data_preview": {
+        "type": "connected",
+        "conversation_id": "test_001",
+        "timestamp": 1775566657.7077303
+      }
+    },
+    {
+      "direction": "received",
+      "message_type": "error",
+      "timestamp": "2026-04-07T20:57:37.710969",
+      "elapsed_ms": 94.96300000000001,
+      "size_bytes": 90,
+      "data_preview": {
+        "type": "error",
+        "code": "EMPTY_MESSAGE",
+        "message": "消息内容不能为空",
+        "timestamp": 1775566657.710224
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stage_name": "连接建立",
+      "duration_ms": 10,
+      "message_count": 1
+    },
+    {
+      "stage_name": "消息处理",
+      "duration_ms": 20,
+      "message_count": 2
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "total_messages": 3,
+    "sent_messages": 1,
+    "received_messages": 2,
+    "message_type_distribution": {
+      "chat_message": 1,
+      "connected": 1,
+      "error": 1
+    },
+    "stage_timings": {
+      "消息处理": {
+        "first_seen_at_ms": 93.265,
+        "message_count": 2
+      },
+      "连接建立": {
+        "first_seen_at_ms": 94.364,
+        "message_count": 1
+      }
+    },
+    "total_data_received_bytes": 253,
+    "has_errors": false
+  }
+}

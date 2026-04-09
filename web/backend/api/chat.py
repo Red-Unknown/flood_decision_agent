@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fast_json_loads
 import os
 import sys
 import time
 from typing import AsyncGenerator, Dict, List, Optional, Callable, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from loguru import logger
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -332,19 +334,21 @@ def format_pipeline_result_to_markdown(result: Dict, user_input: str, events: Li
         lines.append("")
 
     # 4. 执行结果
-    if "tool_name" in snapshot:
-        lines.append("## 📊 执行结果")
-        lines.append("")
+    lines.append("## 📊 执行结果")
+    lines.append("")
 
+    # 检查是否是工具执行结果（包装格式）
+    if "tool_name" in snapshot and "data" in snapshot:
+        # 工具执行后的包装格式: {tool_name, success, data}
         tool_name = snapshot.get("tool_name", "")
-        success = snapshot.get("success", False)
+        tool_data = snapshot.get("data", {})
+        tool_success = snapshot.get("success", False)
 
         if tool_name == "verification":
-            data = snapshot.get("data", {})
-            checks = data.get("checks", [])
-            all_passed = data.get("all_passed", False)
-            overall_score = data.get("overall_score", 0)
-            status = data.get("status", "")
+            checks = tool_data.get("checks", [])
+            all_passed = tool_data.get("all_passed", False)
+            overall_score = tool_data.get("overall_score", 0)
+            status = tool_data.get("status", "")
 
             score_emoji = "✅" if all_passed else "⚠️"
             lines.append(f"{score_emoji} **总体评分**: {overall_score:.2f}")
@@ -364,8 +368,7 @@ def format_pipeline_result_to_markdown(result: Dict, user_input: str, events: Li
                 lines.append("")
 
         elif tool_name == "dispatch":
-            data = snapshot.get("data", {})
-            dispatch_text = data.get("dispatch_order_text", "")
+            dispatch_text = tool_data.get("dispatch_order_text", "")
             if dispatch_text:
                 lines.append("**调度指令**:")
                 lines.append("```")
@@ -373,12 +376,43 @@ def format_pipeline_result_to_markdown(result: Dict, user_input: str, events: Li
                 lines.append("```")
                 lines.append("")
 
-        elif tool_name == "report":
-            data = snapshot.get("data", {})
-            report_content = data.get("report_content", "")
+        elif tool_name == "reporting":
+            report = tool_data.get("report", {})
+            report_content = report.get("report_content", "")
             if report_content:
                 lines.append(report_content)
                 lines.append("")
+
+        elif tool_name == "universal_query":
+            # 通用查询工具 - 直接显示LLM的回答
+            answer = tool_data.get("answer", "")
+            question = tool_data.get("question", "")
+            if answer:
+                lines.append(answer)
+                lines.append("")
+
+        else:
+            # 其他工具 - 尝试显示data中的内容
+            if isinstance(tool_data, dict):
+                # 尝试找到主要的输出字段
+                for key in ["answer", "result", "output", "content", "data"]:
+                    if key in tool_data:
+                        value = tool_data[key]
+                        if isinstance(value, str):
+                            lines.append(value)
+                        elif isinstance(value, dict):
+                            lines.append(fast_json_dumps(value, ensure_ascii=False, indent=2))
+                        lines.append("")
+                        break
+                else:
+                    # 显示所有字段
+                    lines.append(fast_json_dumps(tool_data, ensure_ascii=False, indent=2))
+                    lines.append("")
+
+    elif "answer" in snapshot:
+        # 直接存储的答案（如universal_query的结果）
+        lines.append(snapshot.get("answer", ""))
+        lines.append("")
 
     # 5. 执行统计
     lines.append("## 📊 执行统计")
@@ -448,7 +482,7 @@ async def stream_chat_response(
     _messages[conversation_id].append(user_message)
 
     # 发送用户消息确认
-    yield f"data: {json.dumps({'type': 'user_message', 'content': message, 'conversation_id': conversation_id}, ensure_ascii=False)}\n\n"
+    yield f"data: {fast_json_dumps({'type': 'user_message', 'content': message, 'conversation_id': conversation_id}, ensure_ascii=False)}\n\n"
 
     # 执行Pipeline
     try:
@@ -532,9 +566,9 @@ async def stream_chat_response(
                 "input": message,
             })
         except Exception as pipeline_error:
-            print(f"[ERROR] Pipeline执行异常: {pipeline_error}")
+            logger.error(f"[ERROR] Pipeline执行异常: {pipeline_error}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             # 创建一个失败的结果
             from types import SimpleNamespace
             result = SimpleNamespace(
@@ -545,7 +579,7 @@ async def stream_chat_response(
 
         # 发送所有过程性事件
         for event_data in process_events:
-            yield f"data: {json.dumps(event_data, ensure_ascii=False)}\n\n"
+            yield f"data: {fast_json_dumps(event_data, ensure_ascii=False)}\n\n"
             await asyncio.sleep(0.01)
 
         # 将结果转换为友好的Markdown格式
@@ -567,7 +601,7 @@ async def stream_chat_response(
             chunk = line + '\n'
             accumulated_content += chunk
 
-            yield f"data: {json.dumps({'type': 'chunk', 'content': chunk, 'accumulated': accumulated_content}, ensure_ascii=False)}\n\n"
+            yield f"data: {fast_json_dumps({'type': 'chunk', 'content': chunk, 'accumulated': accumulated_content}, ensure_ascii=False)}\n\n"
             await asyncio.sleep(0.02)
 
         # 保存AI回复
@@ -583,14 +617,14 @@ async def stream_chat_response(
         update_conversation_message_count(conversation_id, len(_messages[conversation_id]))
 
         # 发送完成事件
-        yield f"data: {json.dumps({'type': 'complete', 'content': response_text, 'conversation_id': conversation_id}, ensure_ascii=False)}\n\n"
+        yield f"data: {fast_json_dumps({'type': 'complete', 'content': response_text, 'conversation_id': conversation_id}, ensure_ascii=False)}\n\n"
 
     except Exception as e:
         import traceback
         error_message = f"处理出错: {str(e)}"
-        print(f"Error: {error_message}")
-        print(traceback.format_exc())
-        yield f"data: {json.dumps({'type': 'error', 'content': error_message}, ensure_ascii=False)}\n\n"
+        logger.error(f"Error: {error_message}")
+        logger.error(traceback.format_exc())
+        yield f"data: {fast_json_dumps({'type': 'error', 'content': error_message}, ensure_ascii=False)}\n\n"
 
 
 @router.post("/chat")
@@ -613,7 +647,7 @@ async def chat(request: ChatRequest):
 
         async for chunk in stream_chat_response(request.message, request.conversation_id):
             if chunk.startswith("data: "):
-                data = json.loads(chunk[6:])
+                data = fast_json_loads(chunk[6:])
                 if data.get("type") == "complete":
                     full_content = data.get("content", "")
                     conversation_id = data.get("conversation_id")

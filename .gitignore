@@ -44,6 +44,12 @@ configs/.env.local
 configs/.env.*.local
 *.env
 
+# Trae IDE
+.trae/documents/
+.trae/plans/
+.trae/specs/
+.trae/skills/
+
 # Logs
 logs/
 *.log

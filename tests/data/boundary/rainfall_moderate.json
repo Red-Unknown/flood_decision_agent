@@ -1,0 +1,12 @@
+{
+  "type": "uniform",
+  "intensity_mmh": 50.0,
+  "duration_hours": 2,
+  "total_rainfall_mm": 100.0,
+  "scenario": "moderate",
+  "expected": {
+    "runoff_coefficient": "0.6-0.8 (取决于地表)",
+    "peak_runoff": "35 mm/h (估算)",
+    "verification": "总降雨量应为 100.0 mm"
+  }
+}

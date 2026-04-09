@@ -1,0 +1,16 @@
+{
+  "name": "flat_terrain",
+  "description": "平坦地形，轻微坡度",
+  "size": "50x50",
+  "cell_size": 10,
+  "expected": {
+    "max_depth": "~2.0m (入流点)",
+    "flow_pattern": "均匀向东流动",
+    "inundation_area": "~30% 区域",
+    "verification_points": [
+      "水深从入流点向西递减",
+      "流速在0.5-1.5 m/s之间",
+      "淹没范围大致对称"
+    ]
+  }
+}

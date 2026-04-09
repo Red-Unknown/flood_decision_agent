@@ -1,0 +1,18 @@
+{
+  "filename": "synthetic_flood_01.jpg",
+  "description": "合成洪水图像 - 河流泛滥场景",
+  "size": "640x480",
+  "expected_detections": [
+    {
+      "class": "water",
+      "confidence": "0.7-0.9",
+      "area": "center"
+    },
+    {
+      "class": "flood",
+      "confidence": "0.6-0.8",
+      "area": "lower"
+    }
+  ],
+  "verification": "YOLO应检测到水体，置信度>0.5"
+}

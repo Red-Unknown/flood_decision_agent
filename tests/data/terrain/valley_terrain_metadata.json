@@ -1,0 +1,16 @@
+{
+  "name": "valley_terrain",
+  "description": "河谷地形，中间河道，两岸高地",
+  "size": "50x50",
+  "cell_size": 10,
+  "expected": {
+    "max_depth": "~3.5m (河道中心)",
+    "flow_pattern": "沿河道向南流动",
+    "inundation_area": "~20% 区域(主要在河道)",
+    "verification_points": [
+      "两岸高地(depth<0.1m)不被淹没",
+      "水流集中在河道内",
+      "河道中心流速 > 2.0 m/s"
+    ]
+  }
+}

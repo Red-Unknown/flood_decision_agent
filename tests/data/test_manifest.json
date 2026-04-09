@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-04-04T15:45:46.419850",
+  "test_scenarios": [
+    {
+      "id": "TS001",
+      "name": "平坦地形中等洪水",
+      "terrain": "flat_terrain.asc",
+      "inflow": "inflow_moderate.json",
+      "rainfall": "rainfall_moderate.json",
+      "expected_focus": [
+        "验证基础水流计算",
+        "检查淹没范围对称性",
+        "确认最大水深位置"
+      ]
+    },
+    {
+      "id": "TS002",
+      "name": "河谷地形洪水演进",
+      "terrain": "valley_terrain.asc",
+      "inflow": "inflow_moderate.json",
+      "rainfall": "rainfall_light.json",
+      "expected_focus": [
+        "验证河道约束效果",
+        "检查两岸高地是否被保护",
+        "确认水流沿河道集中"
+      ]
+    },
+    {
+      "id": "TS003",
+      "name": "盆地地形积水模拟",
+      "terrain": "basin_terrain.asc",
+      "inflow": "inflow_small.json",
+      "rainfall": "rainfall_heavy.json",
+      "expected_focus": [
+        "验证积水效果",
+        "检查中心最大水深",
+        "确认出口流量"
+      ]
+    }
+  ],
+  "verification_checklist": [
+    "□ HiPIMS 能正确读取地形文件",
+    "□ 模拟运行完成无错误",
+    "□ 输出结果符合预期范围",
+    "□ 水深分布与地形一致",
+    "□ 流速在合理范围内 (0-5 m/s)",
+    "□ 淹没面积符合预期",
+    "□ YOLO 能检测到水体",
+    "□ Hydrology 能调用 HiPIMS",
+    "□ Hydrology 能调用 YOLO"
+  ]
+}

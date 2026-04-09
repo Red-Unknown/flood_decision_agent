@@ -5,6 +5,7 @@
 
 import asyncio
 import json
+from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fast_json_loads
 import os
 from datetime import datetime
 from pathlib import Path
@@ -188,6 +189,14 @@ async def list_tools() -> List[Tool]:
                 },
                 "required": ["filename"]
             }
+        ),
+        Tool(
+            name="health_check",
+            description="执行健康检查 - 验证文件系统服务可用性",
+            inputSchema={
+                "type": "object",
+                "properties": {}
+            }
         )
     ]
 
@@ -212,14 +221,16 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return await _handle_write_data_json(arguments)
         elif name == "read_data_json":
             return await _handle_read_data_json(arguments)
+        elif name == "health_check":
+            return await _handle_health_check(arguments)
         else:
             raise ValueError(f"未知工具: {name}")
     except Exception as e:
         return [TextContent(
             type="text",
-            text=json.dumps({
+            text=fast_json_dumps({
                 "success": False,
-                "error": str(e)
+                "error": str(e, ensure_ascii=False)
             }, ensure_ascii=False)
         )]
 
@@ -268,7 +279,7 @@ async def _handle_write_planning(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "filepath": filepath,
             "filename": filename,
@@ -330,7 +341,7 @@ async def _handle_read_planning(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps(result, ensure_ascii=False, indent=2)
+        text=fast_json_dumps(result, ensure_ascii=False, indent=2)
     )]
 
 
@@ -359,9 +370,9 @@ async def _handle_list_plans(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
-            "count": len(files),
+            "count": len(files, ensure_ascii=False),
             "plans": files
         }, ensure_ascii=False, indent=2)
     )]
@@ -385,7 +396,7 @@ async def _handle_append_to_plan(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "filepath": filepath,
             "message": "内容已追加"
@@ -406,7 +417,7 @@ async def _handle_delete_plan(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "deleted": plan_id
         }, ensure_ascii=False)
@@ -430,10 +441,10 @@ async def _handle_write_data_json(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "filepath": filepath,
-            "size": os.path.getsize(filepath)
+            "size": os.path.getsize(filepath, ensure_ascii=False)
         }, ensure_ascii=False)
     )]
 
@@ -453,9 +464,47 @@ async def _handle_read_data_json(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "data": data
+        }, ensure_ascii=False, indent=2)
+    )]
+
+
+async def _handle_health_check(args: Dict[str, Any]) -> List[TextContent]:
+    """处理健康检查请求"""
+    _ensure_dirs()
+    
+    plans_exists = os.path.exists(PLANS_DIR)
+    data_exists = os.path.exists(DATA_DIR)
+    
+    plans_count = 0
+    data_count = 0
+    
+    if plans_exists:
+        plans_count = len([f for f in os.listdir(PLANS_DIR) if f.endswith('.md')])
+    if data_exists:
+        data_count = len([f for f in os.listdir(DATA_DIR)])
+    
+    return [TextContent(
+        type="text",
+        text=fast_json_dumps({
+            "success": True,
+            "service": "filesystem",
+            "status": "healthy",
+            "directories": {
+                "plans": {
+                    "path": os.path.abspath(PLANS_DIR),
+                    "exists": plans_exists,
+                    "plan_count": plans_count
+                },
+                "data": {
+                    "path": os.path.abspath(DATA_DIR),
+                    "exists": data_exists,
+                    "file_count": data_count
+                }
+            },
+            "timestamp": datetime.now().isoformat()
         }, ensure_ascii=False, indent=2)
     )]
 

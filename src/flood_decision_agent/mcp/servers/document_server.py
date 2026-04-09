@@ -8,6 +8,7 @@
 
 import asyncio
 import json
+from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fast_json_loads
 import os
 import re
 from datetime import datetime
@@ -130,6 +131,14 @@ async def list_tools() -> List[Tool]:
                     }
                 }
             }
+        ),
+        Tool(
+            name="health_check",
+            description="执行健康检查 - 验证文档处理服务可用性",
+            inputSchema={
+                "type": "object",
+                "properties": {}
+            }
         )
     ]
     return tools
@@ -149,14 +158,16 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return await _handle_list_documents(arguments)
         elif name == "create_sample_docx":
             return await _handle_create_sample_docx(arguments)
+        elif name == "health_check":
+            return await _handle_health_check(arguments)
         else:
             raise ValueError(f"未知工具: {name}")
     except Exception as e:
         return [TextContent(
             type="text",
-            text=json.dumps({
+            text=fast_json_dumps({
                 "success": False,
-                "error": str(e),
+                "error": str(e, ensure_ascii=False),
                 "error_type": type(e).__name__
             }, ensure_ascii=False)
         )]
@@ -167,7 +178,7 @@ async def _handle_docx_to_markdown(args: Dict[str, Any]) -> List[TextContent]:
     if not DOCX_AVAILABLE:
         return [TextContent(
             type="text",
-            text=json.dumps({
+            text=fast_json_dumps({
                 "success": False,
                 "error": "python-docx 未安装，请运行: pip install python-docx"
             }, ensure_ascii=False)
@@ -247,12 +258,12 @@ async def _handle_docx_to_markdown(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "input_file": input_file,
             "output_file": output_file,
             "output_path": output_path,
-            "paragraphs": len(doc.paragraphs),
+            "paragraphs": len(doc.paragraphs, ensure_ascii=False),
             "tables": len(doc.tables),
             "content_preview": markdown_content[:500] + "..." if len(markdown_content) > 500 else markdown_content
         }, ensure_ascii=False, indent=2)
@@ -305,7 +316,7 @@ async def _handle_read_docx_content(args: Dict[str, Any]) -> List[TextContent]:
     if not DOCX_AVAILABLE:
         return [TextContent(
             type="text",
-            text=json.dumps({
+            text=fast_json_dumps({
                 "success": False,
                 "error": "python-docx 未安装"
             }, ensure_ascii=False)
@@ -336,10 +347,10 @@ async def _handle_read_docx_content(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "filename": input_file,
-            "paragraphs": len(doc.paragraphs),
+            "paragraphs": len(doc.paragraphs, ensure_ascii=False),
             "tables": len(doc.tables),
             "content": content[:2000] + "..." if len(content) > 2000 else content
         }, ensure_ascii=False, indent=2)
@@ -373,11 +384,11 @@ async def _handle_list_documents(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "directory": directory,
             "extension": extension,
-            "count": len(files),
+            "count": len(files, ensure_ascii=False),
             "files": files
         }, ensure_ascii=False, indent=2)
     )]
@@ -388,7 +399,7 @@ async def _handle_create_sample_docx(args: Dict[str, Any]) -> List[TextContent]:
     if not DOCX_AVAILABLE:
         return [TextContent(
             type="text",
-            text=json.dumps({
+            text=fast_json_dumps({
                 "success": False,
                 "error": "python-docx 未安装，请运行: pip install python-docx"
             }, ensure_ascii=False)
@@ -453,12 +464,47 @@ async def _handle_create_sample_docx(args: Dict[str, Any]) -> List[TextContent]:
     
     return [TextContent(
         type="text",
-        text=json.dumps({
+        text=fast_json_dumps({
             "success": True,
             "filename": filename,
             "filepath": filepath,
             "title": title,
             "message": "示例文档已创建"
+        }, ensure_ascii=False, indent=2)
+    )]
+
+
+async def _handle_health_check(args: Dict[str, Any]) -> List[TextContent]:
+    """处理健康检查请求"""
+    _ensure_dirs()
+    
+    docx_available = DOCX_AVAILABLE
+    
+    docx_count = 0
+    if os.path.exists(DATA_DIR):
+        docx_count = len([f for f in os.listdir(DATA_DIR) if f.endswith('.docx')])
+    
+    return [TextContent(
+        type="text",
+        text=fast_json_dumps({
+            "success": True,
+            "service": "document",
+            "status": "healthy" if docx_available else "degraded",
+            "dependencies": {
+                "python-docx": docx_available
+            },
+            "directories": {
+                "data": {
+                    "path": os.path.abspath(DATA_DIR),
+                    "exists": os.path.exists(DATA_DIR),
+                    "docx_count": docx_count
+                },
+                "output": {
+                    "path": os.path.abspath(OUTPUT_DIR),
+                    "exists": os.path.exists(OUTPUT_DIR)
+                }
+            },
+            "timestamp": datetime.now().isoformat()
         }, ensure_ascii=False, indent=2)
     )]
 

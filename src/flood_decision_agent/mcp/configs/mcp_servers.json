@@ -20,7 +20,6 @@
         "flood_decision_agent.mcp.servers.hydrology_server"
       ],
       "env": {
-        "PYTHONPATH": ".",
         "PYTHONIOENCODING": "utf-8",
         "PYTHONUNBUFFERED": "1"
       },
@@ -40,6 +39,46 @@
       "description": "文档处理服务 - docx转markdown、文档内容提取",
       "enabled": true
     },
+    "decision_chain": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.decision_chain_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "description": "决策链服务 - Plan/Spec markdown文档管理",
+      "enabled": true
+    },
+    "yolo_vision": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.yolo_vision_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1",
+        "KMP_DUPLICATE_LIB_OK": "TRUE"
+      },
+      "description": "YOLO视觉检测服务 - 洪水区域/水体/基础设施检测 (YOLO11n)",
+      "enabled": true
+    },
+    "rainfall": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.rainfall_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "description": "降雨数据服务 - 实时/预报降雨数据 (OpenWeatherMap/和风天气)",
+      "enabled": true
+    },
     "sqlite": {
       "command": "uvx",
       "args": [
@@ -50,6 +89,45 @@
       "env": {},
       "description": "SQLite 数据库服务（可选）",
       "enabled": false
+    },
+    "web_search": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.web_search_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "description": "网络搜索服务 - 封装 KIMI API 联网查询能力",
+      "enabled": true
+    },
+    "data_hub": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.data_hub_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "description": "数据中枢服务 - 统一数据获取、聚合和管理（降雨/水文/气象）",
+      "enabled": true
+    },
+    "hipims": {
+      "command": "python",
+      "args": [
+        "-m",
+        "flood_decision_agent.mcp.servers.hipims_server"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "description": "HiPIMS 水动力模拟服务 - GPU 加速 2D 洪水演进模拟",
+      "enabled": true
     }
   },
   "settings": {
@@ -59,4 +137,3 @@
     "logLevel": "info"
   }
 }
-</invoke>

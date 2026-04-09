@@ -555,13 +555,33 @@ class NodeSchedulerAgent(BaseAgent):
                     task_graph.update_node_status(node_id, NodeStatus.COMPLETED)
 
                     # 将节点输出写入数据池
+                    # 支持两种格式：output（MCP包装结果）或 raw_data（MCP直接结果）
+                    output_data = result.get("output") or result.get("raw_data", {})
+                    self.logger.info(f"[DEBUG] 节点 {node_id} output_data: {output_data}")
+                    if isinstance(output_data, dict):
+                        for key, value in output_data.items():
+                            data_pool.put(key, value)
+                    
+                    # 如果是 MCP 直接执行结果，也将整个 raw_data 写入数据池
+                    if "raw_data" in result and isinstance(result["raw_data"], dict):
+                        tool_name = result.get("tool", "unknown")
+                        data_pool.put(f"mcp_result:{tool_name}", result["raw_data"])
+                        self.logger.info(f"[DEBUG] 节点 {node_id} 写入 mcp_result:{tool_name}: {result['raw_data']}")
+                    
+                    # 输出数据池当前状态
+                    self.logger.info(f"[DEBUG] 数据池当前keys: {list(data_pool.snapshot().keys())}")
+                else:
+                    failed_nodes.append(node_id)
+                    task_graph.update_node_status(node_id, NodeStatus.FAILED)
+
+                    # 即使失败也将错误信息写入数据池
+                    error_info = result.get("error", "Unknown error")
                     output_data = result.get("output", {})
                     if isinstance(output_data, dict):
                         for key, value in output_data.items():
                             data_pool.put(key, value)
-                else:
-                    failed_nodes.append(node_id)
-                    task_graph.update_node_status(node_id, NodeStatus.FAILED)
+                    data_pool.put(f"error:{node_id}", error_info)
+                    self.logger.info(f"[DEBUG] 节点 {node_id} 写入错误信息: {error_info}")
 
                     # 根据错误策略决定是否继续
                     # 默认策略：一个节点失败，继续执行其他独立分支

@@ -8,6 +8,7 @@ from openai import OpenAI
 
 from flood_decision_agent.conversation.state import ConversationState, ConversationTurn
 from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.agents.prompts import BasePrompts, AgentRole
 
 
 class ConversationContext:
@@ -49,19 +50,7 @@ class ConversationContext:
         Returns:
             系统提示词
         """
-        base_prompt = """你是"水利智脑"——专业的水利调度领域AI助手。
-
-【你的职责】
-1. 理解用户的水利调度相关需求
-2. 基于上下文提供连贯的回答
-3. 在多轮对话中保持逻辑一致性
-4. 根据累积信息调整回答策略
-
-【上下文感知原则】
-- 如果用户问题涉及前文内容，主动关联
-- 如果用户补充或修正前文，及时响应
-- 如果用户转换话题，灵活切换
-- 累积用户提供的信息，用于后续分析"""
+        base_prompt = BasePrompts.get_system_prompt(AgentRole.INTENT_PARSER)
         
         # 添加上下文信息
         context_parts = [base_prompt]
@@ -186,7 +175,7 @@ class ConversationContext:
             response = self._client.chat.completions.create(
                 model="moonshot-v1-8k",
                 messages=[
-                    {"role": "system", "content": "你是一个对话分析助手。"},
+                    {"role": "system", "content": BasePrompts.get_system_prompt(AgentRole.DIALOGUE_ANALYZER)},
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.1,

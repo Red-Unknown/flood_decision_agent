@@ -19,6 +19,7 @@ from flood_decision_agent.core.task_types import (
     get_business_type_description,
 )
 from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.agents.prompts import BasePrompts, AgentRole
 
 
 @dataclass
@@ -345,7 +346,7 @@ class IntentParserV2:
             response = self._client.chat.completions.create(
                 model="moonshot-v1-8k",
                 messages=[
-                    {"role": "system", "content": "你是一个专业的水利调度领域意图解析助手。"},
+                    {"role": "system", "content": BasePrompts.get_system_prompt(AgentRole.INTENT_PARSER)},
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.1,

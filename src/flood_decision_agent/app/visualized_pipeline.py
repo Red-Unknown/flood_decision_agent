@@ -10,12 +10,12 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from flood_decision_agent.agents.decision_chain_generator import (
+from flood_decision_agent.agents.decision_chain import (
     DecisionChainGeneratorAgent,
 )
 from flood_decision_agent.agents.node_scheduler import NodeSchedulerAgent
 from flood_decision_agent.agents.summarizer import SummarizerAgent
-from flood_decision_agent.agents.unit_task_executor import (
+from flood_decision_agent.agents.task_executor import (
     UnitTaskExecutionAgent,
     build_default_handlers,
 )
@@ -224,11 +224,12 @@ class VisualizedPipeline:
                 "total_duration_ms": summary.total_duration_ms,
             }
 
-        # 收集节点执行结果
-        node_results = result.get("node_results", [])
+        # 收集节点执行结果 (scheduler返回的是results字典，需要转换为列表)
+        results_dict = result.get("results", {})
+        node_results = list(results_dict.values()) if isinstance(results_dict, dict) else results_dict
 
-        # 调用总结智能体生成执行总结
-        if success and self.summarizer:
+        # 调用总结智能体生成执行总结（即使部分失败也需要总结）
+        if self.summarizer:
             summary_payload = {
                 "task_request": task_request,
                 "execution_summary": execution_summary,

@@ -10,7 +10,12 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
-from flood_decision_agent.core.agent import BaseAgent
+from flood_decision_agent.agents.base import BaseAgent
+from flood_decision_agent.agents.prompts.summarizer_prompts import (
+    SummaryPromptManager,
+    build_summary_prompt,
+    build_fallback_summary,
+)
 from flood_decision_agent.core.message import BaseMessage, MessageType
 from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
 
@@ -47,7 +52,7 @@ class SummarizerAgent(BaseAgent):
                 base_url="https://api.moonshot.cn/v1",
             )
         except Exception as e:
-            self.logger.warning(f"无法初始化 LLM 客户端: {e}")
+            self.logger.warning(f"无法初始化 LLM 客户端：{e}")
             self._client = None
 
     def _process(self, message: BaseMessage) -> Dict[str, Any]:
@@ -100,19 +105,7 @@ class SummarizerAgent(BaseAgent):
             messages = [
                 {
                     "role": "system",
-                    "content": """你是"水利智脑"的总结助手，负责分析任务执行过程和结果，生成清晰、专业的总结报告。
-
-【你的职责】
-1. 分析任务执行的整体流程和关键步骤
-2. 总结各阶段的执行结果和关键数据
-3. 提取重要发现和结论
-4. 提供后续建议或注意事项
-
-【输出要求】
-- 语言简洁专业，符合水利调度领域特点
-- 结构清晰，分点说明
-- 突出关键数据和结论
-- 总字数控制在300-500字""",
+                    "content": SummaryPromptManager.get_system_prompt(),
                 },
                 {"role": "user", "content": prompt},
             ]
@@ -123,7 +116,7 @@ class SummarizerAgent(BaseAgent):
                 return self._generate_normal_summary(messages)
 
         except Exception as e:
-            self.logger.error(f"LLM 总结生成失败: {e}")
+            self.logger.error(f"LLM 总结生成失败：{e}")
             return self._generate_fallback_summary(execution_info)
 
     def _generate_streaming_summary(self, messages: List[Dict[str, str]]) -> str:
@@ -189,6 +182,7 @@ class SummarizerAgent(BaseAgent):
         execution_summary = execution_info.get("execution_summary", {})
         data_pool = execution_info.get("data_pool_snapshot", {})
         node_results = execution_info.get("node_results", [])
+        task_graph = execution_info.get("task_graph", {})
 
         # 构建任务描述
         user_input = task_request.get("input", "未知任务")
@@ -212,36 +206,21 @@ class SummarizerAgent(BaseAgent):
 
             node_details.append(
                 f"- {node_id} ({task_type}): {status}, "
-                f"耗时 {elapsed_ms:.1f}ms, 使用工具: {tools_used}"
+                f"耗时 {elapsed_ms:.1f}ms, 使用工具：{tools_used}"
             )
 
-        prompt = f"""请对以下水利调度任务执行过程和结果进行总结：
-
-【用户请求】
-{user_input}
-
-【任务类型】
-{task_type}
-
-【执行统计】
-- 总任务数: {total_tasks}
-- 成功完成: {completed_tasks}
-- 失败任务: {failed_tasks}
-- 总耗时: {duration_ms:.2f}ms
-
-【节点执行详情】
-{chr(10).join(node_details) if node_details else "无详细节点信息"}
-
-【数据池关键数据】
-{json.dumps(data_pool, ensure_ascii=False, indent=2)[:500]}
-
-请生成一份专业的执行总结报告，包括：
-1. 任务执行概况
-2. 关键执行步骤和结果
-3. 重要数据发现
-4. 后续建议"""
-
-        return prompt
+        # 使用新的提示词构建函数
+        return build_summary_prompt(
+            user_input=user_input,
+            task_type=task_type,
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+            failed_tasks=failed_tasks,
+            duration_ms=duration_ms,
+            node_details=node_details,
+            data_pool_snapshot=data_pool,
+            task_graph_info=task_graph,
+        )
 
     def _generate_fallback_summary(self, execution_info: Dict[str, Any]) -> str:
         """生成备用总结（当 LLM 不可用时）.
@@ -255,10 +234,13 @@ class SummarizerAgent(BaseAgent):
         execution_summary = execution_info.get("execution_summary", {})
         total_tasks = execution_summary.get("total_tasks", 0)
         completed_tasks = execution_summary.get("completed_tasks", 0)
+        failed_tasks = execution_summary.get("failed_tasks", 0)
         duration_ms = execution_summary.get("total_duration_ms", 0)
 
-        return f"""【执行总结】
-
-本次任务共包含 {total_tasks} 个子任务，其中 {completed_tasks} 个成功完成，总耗时 {duration_ms:.2f}ms。
-
-各阶段执行顺利，数据已采集并处理完毕，决策方案已生成。建议持续关注水情变化，根据实际情况调整调度策略。"""
+        return build_fallback_summary(
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+            failed_tasks=failed_tasks,
+            duration_ms=duration_ms,
+            task_list=[],
+        )

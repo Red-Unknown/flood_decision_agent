@@ -23,6 +23,7 @@ from openai import OpenAI
 
 from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
 from flood_decision_agent.tools.registry import ToolMetadata, ToolRegistry
+from flood_decision_agent.agents.prompts import BasePrompts, AgentRole
 
 
 def register_execution_tools(registry: ToolRegistry) -> None:
@@ -482,20 +483,7 @@ def _universal_query_handler(data_pool: Any, config: Dict[str, Any]) -> Dict[str
         }
 
     # 构建系统提示词
-    system_prompt = """你是"水利智脑"——一个专业的水利调度领域AI助手，同时也具备广泛的通用知识。
-
-【你的能力】
-1. 水利调度专业知识：洪水预警、水库调度、干旱调度、风险评估等
-2. 通用知识：回答用户提出的各类问题
-
-【回答原则】
-- 如果问题与水利相关，提供专业、准确的回答
-- 如果问题与水利无关，用通用知识礼貌回答
-- 语言简洁清晰，结构分明
-- 不确定的信息要说明"据我所知"或"建议进一步核实"
-
-【输出格式】
-直接给出回答，不需要额外的格式标记。"""
+    system_prompt = BasePrompts.get_system_prompt(AgentRole.CHAT_ASSISTANT)
 
     # 流式输出标题
     print(f"\n{'='*70}")

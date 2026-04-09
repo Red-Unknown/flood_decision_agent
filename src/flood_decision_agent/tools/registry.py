@@ -41,17 +41,58 @@ class ToolRegistry:
         name: str,
         handler: ToolFn,
         metadata: ToolMetadata,
-    ) -> None:
-        """注册工具"""
+        allow_override: bool = False,
+    ) -> bool:
+        """注册工具
+        
+        Args:
+            name: 工具名称
+            handler: 工具处理函数
+            metadata: 工具元数据
+            allow_override: 是否允许覆盖已存在的工具
+            
+        Returns:
+            是否注册成功（新注册或覆盖返回True，已存在且不覆盖返回False）
+        """
         if name in self._tools:
+            if not allow_override:
+                if self._logger:
+                    self._logger.debug(f"工具 {name} 已存在，跳过注册")
+                return False
             if self._logger:
-                self._logger.warning(f"工具 {name} 已存在，将被覆盖")
+                self._logger.info(f"工具 {name} 已存在，将被覆盖")
 
         self._tools[name] = handler
         self._metadata[name] = metadata
 
         if self._logger:
-            self._logger.info(f"工具 {name} 注册成功，支持任务类型: {metadata.task_types}")
+            action = "覆盖" if name in self._tools and allow_override else "注册"
+            self._logger.info(f"工具 {name} {action}成功，支持任务类型: {metadata.task_types}")
+        
+        return True
+
+    def register_if_not_exists(
+        self,
+        name: str,
+        handler: ToolFn,
+        metadata: ToolMetadata,
+    ) -> bool:
+        """仅在工具不存在时注册（避免重复注册警告）
+        
+        Args:
+            name: 工具名称
+            handler: 工具处理函数
+            metadata: 工具元数据
+            
+        Returns:
+            是否成功注册（已存在返回False）
+        """
+        if name in self._tools:
+            if self._logger:
+                self._logger.debug(f"工具 {name} 已存在，跳过注册")
+            return False
+        
+        return self.register(name, handler, metadata, allow_override=False)
 
     def unregister(self, name: str) -> None:
         """注销工具"""

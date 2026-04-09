@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fast_json_loads
 import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -17,21 +18,22 @@ class CommonTools:
     """常用工具集合"""
 
     @staticmethod
-    def register_all(registry: Optional[ToolRegistry] = None):
+    def register_all(registry: Optional[ToolRegistry] = None, skip_existing: bool = True):
         """注册所有常用工具到注册中心
         
         Args:
             registry: 指定的注册中心，为None时使用全局注册中心
+            skip_existing: 是否跳过已存在的工具（避免重复注册警告）
         """
         target_registry = registry or get_tool_registry()
-        CommonTools._register_data_query_tools(target_registry)
-        CommonTools._register_compute_tools(target_registry)
-        CommonTools._register_format_tools(target_registry)
-        CommonTools._register_log_tools(target_registry)
+        CommonTools._register_data_query_tools(target_registry, skip_existing)
+        CommonTools._register_compute_tools(target_registry, skip_existing)
+        CommonTools._register_format_tools(target_registry, skip_existing)
+        CommonTools._register_log_tools(target_registry, skip_existing)
         return target_registry
 
     @staticmethod
-    def _register_data_query_tools(registry: ToolRegistry):
+    def _register_data_query_tools(registry: ToolRegistry, skip_existing: bool = True):
         """注册数据查询类工具"""
 
         def get_current_time(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -43,7 +45,17 @@ class CommonTools:
                 "date": now.date().isoformat(),
             }
 
-        registry.register(
+        registry.register_if_not_exists(
+            "get_current_time",
+            get_current_time,
+            ToolMetadata(
+                name="get_current_time",
+                description="获取当前系统时间",
+                task_types={"data_query", "time"},
+                priority=10,
+                output_keys={"current_time", "timestamp"}
+            )
+        ) if skip_existing else registry.register(
             "get_current_time",
             get_current_time,
             ToolMetadata(
@@ -59,14 +71,24 @@ class CommonTools:
             """从数据池查询数据"""
             key = config.get("key")
             default = config.get("default")
-            value = data_pool.get(key, default)
-            return {
-                "data": value,
-                "found": value is not None,
-                "key": key,
-            }
+            
+            if key:
+                value = data_pool.get(key, default)
+                return {
+                    "data": value,
+                    "found": value is not None,
+                    "key": key,
+                }
+            else:
+                # 如果没有提供 key，返回数据池的所有数据
+                all_data = data_pool.snapshot() if hasattr(data_pool, 'snapshot') else data_pool._data
+                return {
+                    "data": all_data,
+                    "found": len(all_data) > 0,
+                    "keys": list(all_data.keys()) if isinstance(all_data, dict) else [],
+                }
 
-        registry.register(
+        registry.register_if_not_exists(
             "query_data_pool",
             query_data_pool,
             ToolMetadata(
@@ -75,7 +97,25 @@ class CommonTools:
                 task_types={"data_query"},
                 priority=20,
                 config_schema={
-                    "required": ["key"],
+                    "required": [],
+                    "properties": {
+                        "key": {"type": "string"},
+                        "default": {"type": "any"}
+                    }
+                },
+                required_keys=set(),
+                output_keys={"data", "found"}
+            )
+        ) if skip_existing else registry.register(
+            "query_data_pool",
+            query_data_pool,
+            ToolMetadata(
+                name="query_data_pool",
+                description="查询共享数据池中的数据",
+                task_types={"data_query"},
+                priority=20,
+                config_schema={
+                    "required": [],
                     "properties": {
                         "key": {"type": "string"},
                         "default": {"type": "any"}
@@ -94,7 +134,17 @@ class CommonTools:
                 "count": len(keys),
             }
 
-        registry.register(
+        registry.register_if_not_exists(
+            "list_data_pool_keys",
+            list_data_pool_keys,
+            ToolMetadata(
+                name="list_data_pool_keys",
+                description="列出数据池中所有可用的key",
+                task_types={"data_query"},
+                priority=30,
+                output_keys={"keys", "count"}
+            )
+        ) if skip_existing else registry.register(
             "list_data_pool_keys",
             list_data_pool_keys,
             ToolMetadata(
@@ -107,7 +157,7 @@ class CommonTools:
         )
 
     @staticmethod
-    def _register_compute_tools(registry: ToolRegistry):
+    def _register_compute_tools(registry: ToolRegistry, skip_existing: bool = True):
         """注册计算类工具"""
 
         def simple_calculator(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -134,25 +184,26 @@ class CommonTools:
                 "b": b,
             }
 
-        registry.register(
-            "simple_calculator",
-            simple_calculator,
-            ToolMetadata(
-                name="simple_calculator",
-                description="简单计算器，支持加减乘除",
-                task_types={"compute", "math"},
-                priority=10,
-                config_schema={
-                    "required": ["operation", "a", "b"],
-                    "properties": {
-                        "operation": {"enum": ["add", "subtract", "multiply", "divide"]},
-                        "a": {"type": "number"},
-                        "b": {"type": "number"}
-                    }
-                },
-                output_keys={"result", "operation"}
-            )
+        meta = ToolMetadata(
+            name="simple_calculator",
+            description="简单计算器，支持加减乘除",
+            task_types={"compute", "math"},
+            priority=10,
+            config_schema={
+                "required": ["operation", "a", "b"],
+                "properties": {
+                    "operation": {"enum": ["add", "subtract", "multiply", "divide"]},
+                    "a": {"type": "number"},
+                    "b": {"type": "number"}
+                }
+            },
+            output_keys={"result", "operation"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("simple_calculator", simple_calculator, meta)
+        else:
+            registry.register("simple_calculator", simple_calculator, meta)
 
         def dataframe_stats(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
             """计算DataFrame统计信息"""
@@ -174,27 +225,28 @@ class CommonTools:
                 "columns": columns,
             }
 
-        registry.register(
-            "dataframe_stats",
-            dataframe_stats,
-            ToolMetadata(
-                name="dataframe_stats",
-                description="计算DataFrame的基本统计信息",
-                task_types={"compute", "statistics"},
-                priority=20,
-                config_schema={
-                    "required": ["data_key"],
-                    "properties": {
-                        "data_key": {"type": "string"},
-                        "columns": {"type": "array", "items": {"type": "string"}}
-                    }
-                },
-                output_keys={"stats", "count", "columns"}
-            )
+        meta = ToolMetadata(
+            name="dataframe_stats",
+            description="计算DataFrame的基本统计信息",
+            task_types={"compute", "statistics"},
+            priority=20,
+            config_schema={
+                "required": ["data_key"],
+                "properties": {
+                    "data_key": {"type": "string"},
+                    "columns": {"type": "array", "items": {"type": "string"}}
+                }
+            },
+            output_keys={"stats", "count", "columns"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("dataframe_stats", dataframe_stats, meta)
+        else:
+            registry.register("dataframe_stats", dataframe_stats, meta)
 
     @staticmethod
-    def _register_format_tools(registry: ToolRegistry):
+    def _register_format_tools(registry: ToolRegistry, skip_existing: bool = True):
         """注册格式转换类工具"""
 
         def to_json(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,7 +260,7 @@ class CommonTools:
                 if isinstance(data, pd.DataFrame):
                     json_str = data.to_json(orient='records', indent=indent, force_ascii=False)
                 else:
-                    json_str = json.dumps(data, indent=indent, ensure_ascii=False, default=str)
+                    json_str = fast_json_dumps(data, indent=indent, ensure_ascii=False, default=str)
 
                 return {
                     "json_string": json_str,
@@ -222,24 +274,25 @@ class CommonTools:
                     "error": str(e),
                 }
 
-        registry.register(
-            "to_json",
-            to_json,
-            ToolMetadata(
-                name="to_json",
-                description="将数据转换为JSON字符串",
-                task_types={"format", "convert"},
-                priority=10,
-                config_schema={
-                    "required": ["data_key"],
-                    "properties": {
-                        "data_key": {"type": "string"},
-                        "indent": {"type": "integer", "default": 2}
-                    }
-                },
-                output_keys={"json_string", "success"}
-            )
+        meta = ToolMetadata(
+            name="to_json",
+            description="将数据转换为JSON字符串",
+            task_types={"format", "convert"},
+            priority=10,
+            config_schema={
+                "required": ["data_key"],
+                "properties": {
+                    "data_key": {"type": "string"},
+                    "indent": {"type": "integer", "default": 2}
+                }
+            },
+            output_keys={"json_string", "success"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("to_json", to_json, meta)
+        else:
+            registry.register("to_json", to_json, meta)
 
         def format_timestamp(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
             """格式化时间戳"""
@@ -260,27 +313,28 @@ class CommonTools:
                     "error": str(e),
                 }
 
-        registry.register(
-            "format_timestamp",
-            format_timestamp,
-            ToolMetadata(
-                name="format_timestamp",
-                description="将时间戳格式化为可读字符串",
-                task_types={"format", "time"},
-                priority=20,
-                config_schema={
-                    "required": ["timestamp"],
-                    "properties": {
-                        "timestamp": {"type": "number"},
-                        "format": {"type": "string", "default": "%Y-%m-%d %H:%M:%S"}
-                    }
-                },
-                output_keys={"formatted_time", "timestamp"}
-            )
+        meta = ToolMetadata(
+            name="format_timestamp",
+            description="将时间戳格式化为可读字符串",
+            task_types={"format", "time"},
+            priority=20,
+            config_schema={
+                "required": ["timestamp"],
+                "properties": {
+                    "timestamp": {"type": "number"},
+                    "format": {"type": "string", "default": "%Y-%m-%d %H:%M:%S"}
+                }
+            },
+            output_keys={"formatted_time", "timestamp"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("format_timestamp", format_timestamp, meta)
+        else:
+            registry.register("format_timestamp", format_timestamp, meta)
 
     @staticmethod
-    def _register_log_tools(registry: ToolRegistry):
+    def _register_log_tools(registry: ToolRegistry, skip_existing: bool = True):
         """注册日志类工具"""
 
         def log_message(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -303,25 +357,26 @@ class CommonTools:
                 "log_entry": log_entry,
             }
 
-        registry.register(
-            "log_message",
-            log_message,
-            ToolMetadata(
-                name="log_message",
-                description="记录日志消息",
-                task_types={"log", "debug"},
-                priority=10,
-                config_schema={
-                    "required": ["level", "message"],
-                    "properties": {
-                        "level": {"enum": ["debug", "info", "warning", "error"]},
-                        "message": {"type": "string"},
-                        "context": {"type": "object"}
-                    }
-                },
-                output_keys={"logged", "timestamp"}
-            )
+        meta = ToolMetadata(
+            name="log_message",
+            description="记录日志消息",
+            task_types={"log", "debug"},
+            priority=10,
+            config_schema={
+                "required": ["level", "message"],
+                "properties": {
+                    "level": {"enum": ["debug", "info", "warning", "error"]},
+                    "message": {"type": "string"},
+                    "context": {"type": "object"}
+                }
+            },
+            output_keys={"logged", "timestamp"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("log_message", log_message, meta)
+        else:
+            registry.register("log_message", log_message, meta)
 
         def create_execution_report(data_pool: SharedDataPool, config: Dict[str, Any]) -> Dict[str, Any]:
             """创建执行报告"""
@@ -346,21 +401,22 @@ class CommonTools:
                 "report_id": report["report_id"],
             }
 
-        registry.register(
-            "create_execution_report",
-            create_execution_report,
-            ToolMetadata(
-                name="create_execution_report",
-                description="创建执行报告",
-                task_types={"log", "report"},
-                priority=30,
-                config_schema={
-                    "properties": {
-                        "title": {"type": "string", "default": "执行报告"},
-                        "metrics": {"type": "object"},
-                        "results": {"type": "object"}
-                    }
-                },
-                output_keys={"report", "report_id"}
-            )
+        meta = ToolMetadata(
+            name="create_execution_report",
+            description="创建执行报告",
+            task_types={"log", "report"},
+            priority=30,
+            config_schema={
+                "properties": {
+                    "title": {"type": "string", "default": "执行报告"},
+                    "metrics": {"type": "object"},
+                    "results": {"type": "object"}
+                }
+            },
+            output_keys={"report", "report_id"}
         )
+        
+        if skip_existing:
+            registry.register_if_not_exists("create_execution_report", create_execution_report, meta)
+        else:
+            registry.register("create_execution_report", create_execution_report, meta)

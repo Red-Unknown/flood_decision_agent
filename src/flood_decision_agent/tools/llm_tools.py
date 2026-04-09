@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fast_json_loads
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Callable
@@ -284,7 +285,7 @@ class LLMToolManager:
 
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
-            arguments = json.loads(tool_call.function.arguments)
+            arguments = fast_json_loads(tool_call.function.arguments)
 
             # 检查是否是官方工具
             formula_uri = self.tool_registry.get_official_formula_uri(tool_name)
@@ -301,7 +302,7 @@ class LLMToolManager:
             tool_messages.append({
                 "role": "tool",
                 "tool_call_id": tool_call.id,
-                "content": json.dumps({"result": tool_result}, ensure_ascii=False),
+                "content": fast_json_dumps({"result": tool_result}, ensure_ascii=False),
             })
 
         return tool_messages

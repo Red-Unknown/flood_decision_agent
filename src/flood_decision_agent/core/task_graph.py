@@ -43,6 +43,7 @@ class Node:
         tool_candidates: 工具候选集，每个工具为字典格式
         execution_strategy: 执行策略
         output_keys: 输出数据key列表
+        metadata: 节点元数据，用于存储额外信息（如MCP工具）
     """
 
     node_id: str
@@ -52,6 +53,7 @@ class Node:
     tool_candidates: List[Dict[str, Any]] = field(default_factory=list)
     execution_strategy: str = ""
     output_keys: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """初始化后处理，设置默认状态为PENDING."""

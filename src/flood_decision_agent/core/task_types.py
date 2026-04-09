@@ -68,7 +68,7 @@ class ExecutionTaskType(Enum):
     UNIVERSAL_QUERY = "universal_query"  # 通用查询（使用LLM直接回答）
 
 
-# 业务类型到执行类型的映射
+# 业务类型到执行类型的映射（模板）
 # 定义每种业务类型需要哪些执行步骤
 BUSINESS_TO_EXECUTION_MAP: Dict[BusinessTaskType, List[ExecutionTaskType]] = {
     BusinessTaskType.FLOOD_WARNING: [

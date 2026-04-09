@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
-from flood_decision_agent.agents.decision_chain.prompts import PromptTemplates, get_system_prompt
+from flood_decision_agent.agents.prompts import BasePrompts, get_system_prompt, IntentParserPrompts
 from flood_decision_agent.core.task_types import (
     BusinessTaskType,
     get_execution_types_for_business,
@@ -164,7 +164,7 @@ class IntentParser:
             )
 
         # 使用新的提示词模板
-        prompt = PromptTemplates.get_intent_parser_prompt(
+        prompt = IntentParserPrompts.get_intent_parser_prompt(
             user_input=user_input,
             templates=self._TEMPLATES,
             use_template_context=True,

@@ -7,6 +7,32 @@ from typing import Any, Dict, Optional, Union
 
 import yaml
 
+_env_loaded = False
+
+
+def _load_env_file():
+    """加载 .env.local 文件到环境变量"""
+    global _env_loaded
+    if _env_loaded:
+        return
+    
+    current_file = Path(__file__).resolve()
+    project_root = current_file.parent.parent.parent.parent
+    env_file = project_root / "configs" / ".env.local"
+    
+    if env_file.exists():
+        with open(env_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    if key and value:
+                        os.environ.setdefault(key, value)
+    
+    _env_loaded = True
+
 
 class ConfigLoader:
     """配置加载器
@@ -22,10 +48,11 @@ class ConfigLoader:
         Args:
             config_dir: 配置目录路径，默认为项目根目录下的 configs/
         """
+        _load_env_file()
+        
         if config_dir is None:
-            # 从当前文件向上查找项目根目录
             current_file = Path(__file__).resolve()
-            project_root = current_file.parent.parent.parent.parent.parent
+            project_root = current_file.parent.parent.parent.parent
             config_dir = project_root / "configs"
         
         self.config_dir = Path(config_dir)
@@ -252,3 +279,25 @@ def get_config(
         配置值
     """
     return get_config_loader().get(key, default, config)
+
+
+def get_api_key(key: str, required: bool = True) -> Optional[str]:
+    """统一获取 API Key
+    
+    Args:
+        key: API Key 名称（如 'KIMI_API_KEY', 'QWEATHER_API_KEY'）
+        required: 是否必需，若为 True 且未配置则抛出异常
+        
+    Returns:
+        API Key 值
+        
+    Raises:
+        ValueError: 当 required=True 且未配置 API Key 时
+    """
+    _load_env_file()
+    value = os.environ.get(key)
+    
+    if not value and required:
+        raise ValueError(f"缺少必需的环境变量: {key}，请在 configs/.env.local 中配置")
+    
+    return value

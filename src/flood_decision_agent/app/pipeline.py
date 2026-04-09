@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from flood_decision_agent.agents.decision_chain_generator import (
+from flood_decision_agent.agents.decision_chain import (
     DecisionChainGeneratorAgent,
 )
 from flood_decision_agent.agents.node_scheduler import NodeSchedulerAgent
-from flood_decision_agent.agents.unit_task_executor import (
+from flood_decision_agent.agents.task_executor import (
     UnitTaskExecutionAgent,
     build_default_handlers,
 )

@@ -1,7 +1,7 @@
 <template>
   <div class="process-timeline">
     <div class="timeline-header">
-      <span class="timeline-title">🔄 任务执行过程</span>
+      <span class="timeline-title">🔄 执行过程时间线</span>
       <div class="timeline-actions">
         <el-button
           v-if="hasExpandableEvents"

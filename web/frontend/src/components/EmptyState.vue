@@ -38,6 +38,20 @@
           </el-tag>
         </div>
       </div>
+
+      <div class="command-hints">
+        <div class="hints-title">特殊命令</div>
+        <div class="hints-list">
+          <div class="hint-item">
+            <code>/plan</code>
+            <span>进入规划模式，创建或编辑规划文档</span>
+          </div>
+          <div class="hint-item">
+            <code>/spec</code>
+            <span>进入规格模式，创建或编辑规格文档</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -162,6 +176,8 @@ defineEmits(['action-click', 'example-click'])
 }
 
 .example-questions {
+  margin-bottom: 32px;
+
   .examples-title {
     font-size: 13px;
     color: var(--text-secondary);
@@ -186,6 +202,45 @@ defineEmits(['action-click', 'example-click'])
     color: var(--primary-color);
     border-color: var(--primary-color);
     background: var(--message-user-bg);
+  }
+}
+
+.command-hints {
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+
+  .hints-title {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .hints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .hint-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+
+    code {
+      background: var(--bg-color);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    span {
+      color: var(--text-secondary);
+    }
   }
 }
 </style>

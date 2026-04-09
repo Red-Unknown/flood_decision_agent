@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { UserFilled, Cpu, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -60,6 +60,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+})
+
+// 调试日志
+onMounted(() => {
+  console.log('[ChatMessage] 组件挂载, message:', props.message)
+  console.log('[ChatMessage] 组件挂载, message.role:', props.message?.role)
+  console.log('[ChatMessage] 组件挂载, message.content 长度:', props.message?.content?.length)
 })
 
 const isUser = computed(() => props.message.role === 'user')
@@ -113,7 +120,10 @@ const renderMarkdown = (text) => {
 }
 
 const renderedContent = computed(() => {
-  return renderMarkdown(props.message.content || '')
+  const content = props.message.content || ''
+  console.log('[ChatMessage] renderedContent, content 长度:', content.length)
+  console.log('[ChatMessage] renderedContent, content 前100字符:', content.substring(0, 100))
+  return renderMarkdown(content)
 })
 
 const renderedStreamingContent = computed(() => {

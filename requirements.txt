@@ -8,6 +8,16 @@ loguru>=0.7
 mcp>=1.26.0
 python-docx>=1.1.0
 
+# YOLO Vision 依赖 (可选，用于视觉检测功能)
+# ultralytics>=8.0
+# opencv-python>=4.8
+
+# 高性能JSON序列化 (P0优化)
+orjson>=3.9.0
+
+# 异步文件操作 (P1优化)
+aiofiles>=23.0.0
+
 pytest>=8.0
 pytest-cov>=5.0
 

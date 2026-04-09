@@ -1,6 +1,7 @@
 # MCP 服务器配置
 
 mcp_servers:
+  # ==================== 核心服务 ====================
   filesystem:
     command: python
     args:
@@ -10,19 +11,7 @@ mcp_servers:
       PYTHONIOENCODING: "utf-8"
       PYTHONUNBUFFERED: "1"
     description: "文件系统操作服务 - 规划文件读写"
-    enabled: true
-
-  hydrology:
-    command: python
-    args:
-      - "-m"
-      - "flood_decision_agent.mcp.servers.hydrology_server"
-    env:
-      PYTHONPATH: "."
-      PYTHONIOENCODING: "utf-8"
-      PYTHONUNBUFFERED: "1"
-    description: "水利模型服务 - 降雨径流、洪水演进、水库调度"
-    enabled: true
+    enabled: false
 
   document:
     command: python
@@ -32,9 +21,102 @@ mcp_servers:
     env:
       PYTHONIOENCODING: "utf-8"
       PYTHONUNBUFFERED: "1"
-    description: "文档处理服务 - docx转markdown、文档内容提取"
+    description: "文档处理服务 - docx 转 markdown、文档内容提取"
+    enabled: false
+
+  # ==================== 数据服务 ====================
+  rainfall:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.rainfall_server"
+    env:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+      KIMI_API_KEY: "${KIMI_API_KEY}"
+      QWEATHER_API_KEY: "${QWEATHER_API_KEY}"
+    description: "降雨数据服务 - 实时和历史降雨数据查询（和风天气）"
     enabled: true
 
+  web_search:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.web_search_server"
+    env:
+      KIMI_API_KEY: "${KIMI_API_KEY}"
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "网络搜索服务 - KIMI API 联网查询"
+    enabled: false
+
+  data_hub:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.data_hub_server"
+    env:
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+      KIMI_API_KEY: "${KIMI_API_KEY}"
+      QWEATHER_API_KEY: "${QWEATHER_API_KEY}"
+    description: "数据中枢服务 - 统一数据获取、聚合和多源数据融合"
+    enabled: true
+
+  # ==================== 水利模型服务 ====================
+  hydrology:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.hydrology_server"
+    env:
+      PYTHONPATH: "."
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+      KIMI_API_KEY: "${KIMI_API_KEY}"  # 用于结果解释
+    description: "水文数据服务 - 水文站数据查询"
+    enabled: false
+
+  hipims:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.hipims_server"
+    env:
+      PYTHONPATH: "."
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+      KIMI_API_KEY: "${KIMI_API_KEY}"  # 用于结果解释
+    description: "2D 水动力模拟服务 - GPU 加速洪水演进模拟（带 LLM 结果解释）"
+    enabled: false
+
+  # ==================== 决策支持服务 ====================
+  decision_chain:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.decision_chain_server"
+    env:
+      KIMI_API_KEY: "${KIMI_API_KEY}"
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "决策链生成服务 - 智能体决策链生成和优化"
+    enabled: false
+
+  # ==================== 视觉服务 ====================
+  yolo_vision:
+    command: python
+    args:
+      - "-m"
+      - "flood_decision_agent.mcp.servers.yolo_vision_server"
+    env:
+      PYTHONPATH: "."
+      PYTHONIOENCODING: "utf-8"
+      PYTHONUNBUFFERED: "1"
+    description: "YOLO 视觉服务 - 洪水图像检测和分析"
+    enabled: false  # 可选服务，默认禁用
+
+  # ==================== 数据库服务 ====================
   sqlite:
     command: uvx
     args:
@@ -50,3 +132,16 @@ settings:
   connection_timeout: 30
   retry_attempts: 3
   log_level: "info"
+  # 工具复杂度分类（用于结果包装器）
+  tool_complexity:
+    complex_tools:
+      - hydrology
+      - hipims
+      - decision_chain
+    simple_tools:
+      - rainfall
+      - data_hub
+      - web_search
+      - filesystem
+      - document
+      - yolo_vision

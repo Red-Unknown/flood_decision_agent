@@ -15,7 +15,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from flood_decision_agent.agents.decision_chain.generator import DecisionChainGeneratorAgent
 from flood_decision_agent.agents.intent_parser.parser import IntentParser, TaskIntent
 from flood_decision_agent.core.task_graph import TaskGraph
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class GenerationStage(str, Enum):

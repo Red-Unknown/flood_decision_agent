@@ -18,7 +18,7 @@ from flood_decision_agent.core.task_types import (
     BusinessTaskType,
     get_business_type_description,
 )
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 from flood_decision_agent.agents.prompts import BasePrompts, AgentRole
 
 

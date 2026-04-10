@@ -13,7 +13,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from flood_decision_agent.agents.decision_chain.task_decomposer import TaskNodeInfo, TaskType
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class DocumentType(str, Enum):

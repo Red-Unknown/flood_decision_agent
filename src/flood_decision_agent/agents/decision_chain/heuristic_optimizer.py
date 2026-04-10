@@ -17,7 +17,7 @@ from flood_decision_agent.agents.decision_chain.chain_optimizer import (
 )
 from flood_decision_agent.agents.decision_chain.task_decomposer import TaskNodeInfo, TaskType
 from flood_decision_agent.core.task_graph import TaskGraph
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 @dataclass

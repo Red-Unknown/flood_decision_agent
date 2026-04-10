@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Optional, Protocol, Union
 
 from flood_decision_agent.core.message import BaseMessage, MessageType
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class AgentStatus(enum.Enum):

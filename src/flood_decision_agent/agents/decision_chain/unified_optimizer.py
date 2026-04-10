@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from flood_decision_agent.agents.decision_chain.task_decomposer import TaskNodeInfo, TaskType
 from flood_decision_agent.agents.prompts import ChainGenerationPrompts
 from flood_decision_agent.infrastructure.llm.kimi_client import KimiClient
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 @dataclass

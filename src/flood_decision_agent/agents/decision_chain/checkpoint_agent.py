@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from flood_decision_agent.agents.base.agent import BaseAgent
 from flood_decision_agent.core.message import BaseMessage
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class CheckpointStatus(enum.Enum):

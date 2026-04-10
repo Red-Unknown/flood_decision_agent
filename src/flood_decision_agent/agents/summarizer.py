@@ -17,7 +17,7 @@ from flood_decision_agent.agents.prompts.summarizer_prompts import (
     build_fallback_summary,
 )
 from flood_decision_agent.core.message import BaseMessage, MessageType
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 
 
 class SummarizerAgent(BaseAgent):

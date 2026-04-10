@@ -16,7 +16,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 from flood_decision_agent.agents.task_executor.executor import UnitTaskExecutionAgent
 from flood_decision_agent.core.shared_data_pool import SharedDataPool
 from flood_decision_agent.core.task_graph import TaskGraph
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class TaskStatus(str, Enum):

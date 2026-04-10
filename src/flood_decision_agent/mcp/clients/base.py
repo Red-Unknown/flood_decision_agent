@@ -22,7 +22,7 @@ from mcp.client.stdio import stdio_client
 from mcp.types import Tool as MCPTool
 
 from flood_decision_agent.infrastructure.config_loader import ConfigLoader
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 from flood_decision_agent.shared.utils.timeout_utils import (
     with_timeout,
     TimeoutManager,

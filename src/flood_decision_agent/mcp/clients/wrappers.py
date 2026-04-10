@@ -8,7 +8,7 @@ import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 from flood_decision_agent.mcp.clients.base import MCPClientManager
 from flood_decision_agent.mcp.clients.prompts import PromptManager
 

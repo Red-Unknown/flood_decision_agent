@@ -22,7 +22,7 @@ from flood_decision_agent.mcp.protocol.constants import (
     SERVER_STATUS_ERROR,
     SERVER_STATUS_INITIALIZING,
 )
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 T = TypeVar('T')

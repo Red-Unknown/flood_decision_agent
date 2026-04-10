@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 from flood_decision_agent.mcp.clients.base import MCPClientManager, get_mcp_manager, MCPToolInfo
 from flood_decision_agent.core.shared_data_pool import SharedDataPool
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class MCPToolAdapter:

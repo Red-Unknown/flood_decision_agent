@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 from flood_decision_agent.mcp.clients.base import MCPClientManager, MCPClientConnection
 
 logger = get_logger().bind(name="MCPHealthManager")

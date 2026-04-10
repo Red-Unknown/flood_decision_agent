@@ -15,7 +15,7 @@ from flood_decision_agent.mcp.protocol.constants import (
     STDIO_ENCODING,
     MAX_MESSAGE_SIZE,
 )
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class TransportType(Enum):

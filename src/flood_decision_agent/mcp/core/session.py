@@ -20,7 +20,7 @@ from flood_decision_agent.mcp.protocol.constants import (
     DEFAULT_TIMEOUT,
     HEARTBEAT_INTERVAL,
 )
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 class SessionState(Enum):

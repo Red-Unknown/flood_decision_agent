@@ -25,7 +25,7 @@ from flood_decision_agent.core.task_graph import NodeStatus, TaskGraph
 from flood_decision_agent.core.task_graph_builder import TaskGraphBuilder
 from flood_decision_agent.data.mock_data import MockDataGenerator
 from flood_decision_agent.fusion.decision_fusion import DecisionFusion
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 from flood_decision_agent.tools.execution_tools import register_execution_tools
 from flood_decision_agent.tools.registry import ToolRegistry
 from flood_decision_agent.visualization.base import BaseVisualizer

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 T = TypeVar("T")
 

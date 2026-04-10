@@ -24,7 +24,7 @@ from flood_decision_agent.evaluation.metrics import (
     SafetyMetrics,
 )
 from flood_decision_agent.evaluation.test_cases import TestCase, TestSuite
-from flood_decision_agent.infra.logging import get_logger
+from flood_decision_agent.infrastructure.logging import get_logger
 
 
 @dataclass

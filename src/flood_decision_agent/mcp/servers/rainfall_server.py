@@ -398,12 +398,17 @@ async def _handle_check_api_status(args: Dict[str, Any]) -> List[TextContent]:
 
 async def _fetch_qweather_current(session: aiohttp.ClientSession, city: str) -> Dict:
     """获取和风天气当前天气"""
+    # DEBUG: 添加日志查看传入的城市参数
+    logger.debug(f"[RainfallServer] _fetch_qweather_current 接收到的city参数: {city}")
+    
     api_key = _get_api_key("qweather")
     if not api_key:
         raise ValueError("未配置 QWEATHER_API_KEY")
 
     # 获取城市ID（使用内置映射表）
     city_id = _get_city_id(city)
+    logger.debug(f"[RainfallServer] _fetch_qweather_current city_id映射结果: {city} -> {city_id}")
+    
     if not city_id:
         raise ValueError(f"未找到城市: {city}。支持的城市: {list(CITY_ID_MAP.keys())}")
 

@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from loguru import logger as _loguru_logger
 
+from flood_decision_agent.infrastructure.logging import CONSOLE_FORMAT, FILE_FORMAT
+
 
 class MCPLoggerFactory:
     """MCP 日志记录器工厂类"""
@@ -37,14 +39,12 @@ class MCPLoggerFactory:
 
         cls._log_dir.mkdir(parents=True, exist_ok=True)
 
-        _loguru_logger.remove()
-
         _loguru_logger.add(
             sys.stderr,
-            level="INFO",
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-            backtrace=False,
-            diagnose=False,
+            level="DEBUG",
+            format=CONSOLE_FORMAT,
+            backtrace=True,
+            diagnose=True,
         )
 
         cls._initialized = True
@@ -73,7 +73,7 @@ class MCPLoggerFactory:
         log_handler = _loguru_logger.add(
             str(log_file),
             level="DEBUG",
-            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+            format=FILE_FORMAT,
             rotation="10 MB",
             retention=f"{cls._retention_days} days",
             compression="zip",

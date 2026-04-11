@@ -7,7 +7,17 @@ from pathlib import Path
 from loguru import logger
 
 
-def setup_logging(level: str = "INFO") -> None:
+CONSOLE_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+FILE_FORMAT = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}"
+
+_logging_initialized = False
+
+
+def setup_logging(level: str = "DEBUG") -> None:
+    global _logging_initialized
+    if _logging_initialized:
+        return
+
     logger.remove()
 
     today_dir = Path("logs") / date.today().isoformat()
@@ -16,16 +26,23 @@ def setup_logging(level: str = "INFO") -> None:
     logger.add(
         sink=str(today_dir / "app.log"),
         level=level,
+        format=FILE_FORMAT,
+        rotation="10 MB",
+        retention="7 days",
+        compression="zip",
         enqueue=True,
-        backtrace=False,
-        diagnose=False,
+        backtrace=True,
+        diagnose=True,
     )
     logger.add(
         sink=sys.stdout,
         level=level,
-        backtrace=False,
-        diagnose=False,
+        format=CONSOLE_FORMAT,
+        backtrace=True,
+        diagnose=True,
     )
+
+    _logging_initialized = True
 
 
 def get_logger() -> "logger.__class__":

@@ -1970,11 +1970,11 @@ class DecisionPipeline:
 
         # 从意图解析结果中提取城市参数，写入数据池供后续工具使用
         intent_goal = metadata.get("intent", {}).get("goal", {})
-        print(f"[DEBUG] intent_goal: {intent_goal}")
+        self._logger.debug(f"[Generator] intent_goal: {intent_goal}")
         if intent_goal.get("city"):
             data_pool.set("city", intent_goal["city"])
             self._logger.info(f"从意图解析中提取城市参数: {intent_goal['city']}")
-            print(f"[DEBUG] 写入data_pool: city={intent_goal['city']}")
+            self._logger.debug(f"[Generator] 写入data_pool: city={intent_goal['city']}")
 
         # 阶段2: 执行决策链（如果有NodeScheduler）
         if self.node_scheduler:

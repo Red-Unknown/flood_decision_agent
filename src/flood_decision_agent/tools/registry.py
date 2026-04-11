@@ -8,17 +8,34 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 from flood_decision_agent.core.shared_data_pool import SharedDataPool
 
+try:
+    from flood_decision_agent.core.parameter_types import ParameterRequirement
+except ImportError:
+    ParameterRequirement = None
+
 
 @dataclass
 class ToolMetadata:
-    """工具元数据"""
+    """工具元数据
+    
+    Attributes:
+        name: 工具名称
+        description: 工具描述
+        task_types: 该工具支持的任务类型集合
+        priority: 优先级，数字越小优先级越高
+        config_schema: 配置参数schema
+        required_keys: 需要的输入数据key
+        output_keys: 输出的数据key
+        param_requirements: 参数需求列表（新增，用于ParameterPlanner）
+    """
     name: str
     description: str
-    task_types: Set[str]  # 该工具支持的任务类型
-    priority: int = 100  # 优先级，数字越小优先级越高
-    config_schema: Dict[str, Any] = field(default_factory=dict)  # 配置参数schema
-    required_keys: Set[str] = field(default_factory=set)  # 需要的输入数据key
-    output_keys: Set[str] = field(default_factory=set)  # 输出的数据key
+    task_types: Set[str]
+    priority: int = 100
+    config_schema: Dict[str, Any] = field(default_factory=dict)
+    required_keys: Set[str] = field(default_factory=set)
+    output_keys: Set[str] = field(default_factory=set)
+    param_requirements: List[Any] = field(default_factory=list)
 
 
 ToolFn = Callable[[SharedDataPool, Dict[str, Any]], Dict[str, Any]]

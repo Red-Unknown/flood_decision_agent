@@ -6,11 +6,18 @@
 
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from flood_decision_agent.core.task_graph import Node, NodeStatus
+
+try:
+    from flood_decision_agent.core.tool_types import ToolCandidate
+except ImportError:
+    ToolCandidate = None
 
 
 class TaskType(Enum):
@@ -47,6 +54,7 @@ class TaskNodeInfo:
         outputs: 输出数据key列表
         dependencies: 依赖任务ID列表
         metadata: 额外元数据
+        tool_candidates: 工具候选列表（新增，用于ParameterPlanner）
     """
 
     task_id: str
@@ -56,6 +64,7 @@ class TaskNodeInfo:
     outputs: List[str] = field(default_factory=list)
     dependencies: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    tool_candidates: List[Any] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典格式.
@@ -250,20 +259,205 @@ class TaskDecomposer:
     """任务分解器.
 
     支持从最终目标逆向分解任务，并进行正向验证和节点结构化。
+    增强版：支持 LLM 辅助分解和工具推荐。
 
     Attributes:
         rule_library: 分解规则库
         _decomposition_cache: 分解结果缓存
+        llm_client: LLM 客户端（可选，用于辅助分解）
+        tool_registry: 工具注册中心（可选，用于工具推荐）
+        water_domain_prompts: 水利领域提示词（可选）
     """
 
-    def __init__(self, rule_library: Optional[DecompositionRuleLibrary] = None) -> None:
+    def __init__(
+        self,
+        rule_library: Optional[DecompositionRuleLibrary] = None,
+        llm_client: Optional[Any] = None,
+        tool_registry: Optional[Any] = None,
+        water_domain_prompts: Optional[Any] = None,
+    ) -> None:
         """初始化任务分解器.
 
         Args:
             rule_library: 分解规则库，如果为None则使用默认规则库
+            llm_client: LLM 客户端（可选，用于辅助分解）
+            tool_registry: 工具注册中心（可选，用于工具推荐）
+            water_domain_prompts: 水利领域提示词（可选）
         """
         self.rule_library = rule_library or DecompositionRuleLibrary()
         self._decomposition_cache: Dict[str, List[TaskNodeInfo]] = {}
+        self.llm_client = llm_client
+        self.tool_registry = tool_registry
+        self.water_domain_prompts = water_domain_prompts
+
+    async def decompose(
+        self,
+        goal: str,
+        task_type: TaskType,
+        intent: Optional[Any] = None,
+    ) -> List[TaskNodeInfo]:
+        """分解任务 - 规则为主，LLM辅助
+
+        Args:
+            goal: 目标描述
+            task_type: 任务类型
+            intent: 任务意图（可选）
+
+        Returns:
+            List[TaskNodeInfo]: 含 tool_candidates 的任务节点列表
+        """
+        rule = self.rule_library.get_rule(task_type)
+        if rule:
+            nodes = self._decompose_by_rule(goal, task_type, rule)
+            if nodes:
+                for node in nodes:
+                    if self.tool_registry:
+                        node.tool_candidates = await self._recommend_tools(node)
+                return nodes
+
+        if self.llm_client and self.water_domain_prompts:
+            nodes = await self._decompose_by_llm(goal, task_type, intent)
+            return nodes
+
+        default_node = self._create_default_node(goal, task_type)
+        if self.tool_registry:
+            default_node.tool_candidates = await self._recommend_tools(default_node)
+        return [default_node]
+
+    def _decompose_by_rule(
+        self,
+        goal: str,
+        task_type: TaskType,
+        rule: DecompositionRule,
+    ) -> List[TaskNodeInfo]:
+        """使用规则库分解任务"""
+        nodes: List[TaskNodeInfo] = []
+        output_to_node: Dict[str, str] = {}
+
+        for idx, sub_task_def in enumerate(rule.sub_tasks):
+            task_id = self._generate_task_id(sub_task_def["task_type"].value, idx)
+            deps = []
+            for input_key in sub_task_def.get("inputs", []):
+                if input_key in output_to_node:
+                    dep_id = output_to_node[input_key]
+                    if dep_id not in deps:
+                        deps.append(dep_id)
+
+            node = TaskNodeInfo(
+                task_id=task_id,
+                task_type=sub_task_def["task_type"],
+                description=sub_task_def.get("description", ""),
+                inputs=sub_task_def.get("inputs", []),
+                outputs=sub_task_def.get("outputs", []),
+                dependencies=deps,
+                metadata={"goal": goal, "sequence": idx},
+            )
+            nodes.append(node)
+            for output_key in node.outputs:
+                output_to_node[output_key] = task_id
+
+        nodes.reverse()
+        self._recompute_dependencies(nodes)
+        return nodes
+
+    async def _decompose_by_llm(
+        self,
+        goal: str,
+        task_type: TaskType,
+        intent: Optional[Any],
+    ) -> List[TaskNodeInfo]:
+        """使用LLM辅助分解任务"""
+        try:
+            domain_context = ""
+            if self.water_domain_prompts:
+                task_type_str = task_type.value if hasattr(task_type, 'value') else str(task_type)
+                domain_context = self.water_domain_prompts.get_data_chain_prompt(task_type_str)
+
+            prompt = f"""
+分解以下任务为可执行的子任务：
+
+目标：{goal}
+任务类型：{task_type.value if hasattr(task_type, 'value') else str(task_type)}
+
+{domain_context}
+
+请输出JSON格式的任务分解结果，每个任务包含：
+- task_id: 任务ID
+- task_type: 任务类型
+- description: 任务描述
+- inputs: 输入key列表
+- outputs: 输出key列表
+- dependencies: 依赖任务ID列表
+"""
+            response = await self.llm_client.complete(prompt)
+            nodes = self._parse_llm_decomposition(response, task_type)
+            for node in nodes:
+                if self.tool_registry:
+                    node.tool_candidates = await self._recommend_tools(node)
+            return nodes
+        except Exception:
+            return [self._create_default_node(goal, task_type)]
+
+    def _parse_llm_decomposition(self, response: str, task_type: TaskType) -> List[TaskNodeInfo]:
+        """解析LLM输出的任务分解结果"""
+        import re
+        try:
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group())
+                tasks = result.get("tasks", [])
+                return [
+                    TaskNodeInfo(
+                        task_id=t.get("task_id", f"task_{i}"),
+                        task_type=TaskType(t.get("task_type", task_type.value)),
+                        description=t.get("description", ""),
+                        inputs=t.get("inputs", []),
+                        outputs=t.get("outputs", []),
+                        dependencies=t.get("dependencies", []),
+                    )
+                    for i, t in enumerate(tasks)
+                ]
+        except Exception:
+            pass
+        return [self._create_default_node("", task_type)]
+
+    async def _recommend_tools(self, node: TaskNodeInfo) -> List[Any]:
+        """为任务节点推荐工具
+
+        Returns:
+            List[ToolCandidate]: 工具候选列表（轻量级元数据）
+        """
+        if not self.tool_registry:
+            return []
+
+        try:
+            task_type_str = node.task_type.value if hasattr(node.task_type, 'value') else str(node.task_type)
+            matching_tools = self.tool_registry.find_by_task_type(task_type_str)
+
+            from flood_decision_agent.core.tool_types import ToolCandidate
+            candidates = []
+            for tool_meta in matching_tools[:3]:
+                candidate = ToolCandidate(
+                    tool_name=tool_meta.name,
+                    priority=tool_meta.priority,
+                    reason=f"支持任务类型: {task_type_str}",
+                    param_requirements=tool_meta.param_requirements if hasattr(tool_meta, 'param_requirements') else [],
+                )
+                candidates.append(candidate)
+
+            candidates.sort(key=lambda x: x.priority, reverse=True)
+            return candidates
+        except Exception:
+            return []
+
+    def _create_default_node(self, goal: str, task_type: TaskType) -> TaskNodeInfo:
+        """创建默认单节点任务"""
+        return TaskNodeInfo(
+            task_id=self._generate_task_id(task_type.value, 0),
+            task_type=task_type,
+            description=goal,
+            outputs=["output"],
+        )
 
     def decompose_backward(
         self,

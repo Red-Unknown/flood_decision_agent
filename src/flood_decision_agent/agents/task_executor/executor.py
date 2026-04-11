@@ -445,6 +445,10 @@ class UnitTaskExecutionAgent(BaseAgent):
         """
         params = dict(tool_config)
         
+        # DEBUG: 添加日志查看参数构建过程
+        self.logger.debug(f"[Executor] _build_mcp_tool_params: tool_name={tool_name}, tool_config={tool_config}")
+        self.logger.debug(f"[Executor] _build_mcp_tool_params: data_pool keys={list(data_pool.snapshot().keys())}")
+        
         # 常见参数映射
         if 'city' not in params:
             # 尝试从数据池获取城市信息
@@ -452,9 +456,11 @@ class UnitTaskExecutionAgent(BaseAgent):
             if city:
                 params['city'] = city
                 self.logger.debug(f"从data_pool获取city: {city}")
+                self.logger.debug(f"[Executor] _build_mcp_tool_params 从data_pool获取city: {city}")
             else:
                 params['city'] = '北京'  # 默认值
                 self.logger.debug(f"data_pool中无city，使用默认值: 北京")
+                self.logger.debug(f"[Executor] _build_mcp_tool_params data_pool中无city，使用默认值: 北京")
         
         if 'days' not in params and 'forecast' in tool_name.lower():
             params['days'] = 3  # 默认预报3天
@@ -464,6 +470,7 @@ class UnitTaskExecutionAgent(BaseAgent):
             if station:
                 params['station'] = station
         
+        self.logger.debug(f"[Executor] _build_mcp_tool_params 最终参数: {params}")
         return params
 
     def _process(self, message: BaseMessage) -> Dict[str, Any]:
@@ -499,9 +506,14 @@ class UnitTaskExecutionAgent(BaseAgent):
         return self._process_sync(message, use_mcp=True)
     
     def _process_sync(self, message: BaseMessage, use_mcp: bool = False) -> Dict[str, Any]:
-        """处理单元任务执行请求"""
+        """处理单元任务执行请求
+
+        支持两种参数传递方式：
+        1. 传统方式：tools_spec + data_dependencies（保留兼容）
+        2. ParameterPlan方式：通过 param_plan 直接传递预生成的参数计划
+        """
         payload = message.payload
-        
+
         # 1. 解析消息
         node_id = payload.get("node_id", "unknown")
         task_type = payload.get("task_type", "default")
@@ -510,13 +522,27 @@ class UnitTaskExecutionAgent(BaseAgent):
         data_pool = payload.get("data_pool")
         context = payload.get("context", {})
         data_dependencies = payload.get("data_dependencies", [])  # 数据依赖定义
-        
+
+        param_plan = payload.get("param_plan")  # ParameterPlanner 生成的参数计划
+
         if not data_pool:
             raise ValueError("消息 payload 必须包含 'data_pool'")
-        
+
         self.logger.info(f"[节点 {node_id}] 开始执行，任务类型: {task_type}, 策略: {execution_strategy}")
-        
-        # 2. 检查数据依赖
+
+        # 1.5 处理 ParameterPlan（新增：ParameterPlanner 模式）
+        if param_plan:
+            self.logger.info(f"[节点 {node_id}] 使用预生成的参数计划: {param_plan.get('selected_tool')}")
+            selected_tool = param_plan.get("selected_tool", "")
+            param_dict = param_plan.get("parameters", [])
+
+            if isinstance(param_dict, list):
+                param_dict = {p.get("param_name", ""): p.get("value") for p in param_dict if p.get("param_name")}
+
+            tool_spec = [{"tool_name": selected_tool, "parameters": param_dict}]
+            return self._execute_with_param_plan(node_id, task_type, tool_spec, data_pool, param_dict)
+
+        # 2. 检查数据依赖（传统模式）
         if data_dependencies and self.data_service:
             missing_data = self._check_data_dependencies(data_dependencies, data_pool)
             if missing_data:
@@ -896,6 +922,63 @@ class UnitTaskExecutionAgent(BaseAgent):
         
         else:
             raise ValueError(f"未知的执行策略: {strategy}")
+
+    def _execute_with_param_plan(
+        self,
+        node_id: str,
+        task_type: str,
+        tool_spec: List[Dict[str, Any]],
+        data_pool: SharedDataPool,
+        param_dict: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """使用 ParameterPlan 预生成的参数直接执行工具
+
+        这是 ParameterPlanner 模式下的执行路径，跳过工具选择和参数提取步骤。
+
+        Args:
+            node_id: 节点ID
+            task_type: 任务类型
+            tool_spec: 工具规格列表
+            data_pool: 数据池
+            param_dict: 参数字典
+
+        Returns:
+            执行结果
+        """
+        if not tool_spec:
+            return {
+                "node_id": node_id,
+                "status": "error",
+                "error": f"未为任务类型 '{task_type}' 指定工具",
+            }
+
+        tool = tool_spec[0]
+        tool_name = tool.get("tool_name", "")
+
+        self.logger.info(f"[节点 {node_id}] 使用 ParameterPlan 模式执行工具: {tool_name}")
+        self.logger.debug(f"[节点 {node_id}] 参数: {param_dict}")
+
+        try:
+            result = self._execute_single_tool(tool, data_pool, use_mcp=False)
+
+            return {
+                "node_id": node_id,
+                "task_type": task_type,
+                "status": "completed" if result.get("success") else "error",
+                "result": result.get("data", {}),
+                "tool_name": tool_name,
+                "success": result.get("success", False),
+                "error": result.get("error"),
+            }
+        except Exception as e:
+            self.logger.error(f"[节点 {node_id}] 执行失败: {e}")
+            return {
+                "node_id": node_id,
+                "task_type": task_type,
+                "status": "error",
+                "error": str(e),
+                "tool_name": tool_name,
+            }
 
     def _execute_single_tool(
         self,

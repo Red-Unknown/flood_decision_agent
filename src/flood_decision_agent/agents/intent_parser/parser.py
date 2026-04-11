@@ -20,19 +20,30 @@ from flood_decision_agent.core.task_types import (
 )
 from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 from flood_decision_agent.tools.llm_tools import LLMToolManager, create_default_tool_manager
+from flood_decision_agent.infrastructure.logging import get_logger
+
+logger = get_logger().bind(name="IntentParser")
 
 
 @dataclass
 class TaskIntent:
-    """任务意图数据类."""
+    """任务意图数据类.
+
+    简化版：仅包含意图信息，不包含执行步骤。
+    执行步骤由 TaskDecomposer 负责生成。
+    """
 
     goal: Dict[str, Any] = field(default_factory=dict)
     constraints: Dict[str, Any] = field(default_factory=dict)
     context: Dict[str, Any] = field(default_factory=dict)
     task_type: BusinessTaskType = BusinessTaskType.UNKNOWN
     raw_input: Optional[str] = None
-    execution_steps: List[ExecutionTaskType] = field(default_factory=list)
     error_message: Optional[str] = None
+
+    @property
+    def execution_steps(self) -> List[ExecutionTaskType]:
+        """获取执行步骤（向后兼容，由 TaskDecomposer 替代）"""
+        return get_execution_types_for_business(self.task_type)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -250,12 +261,16 @@ class IntentParser:
                 # 获取执行步骤
                 execution_steps = get_execution_types_for_business(task_type)
 
+                # DEBUG: 添加日志查看意图解析结果
+                parsed_goal = result.get("goal", {"description": user_input})
+                logger.debug(f"[IntentParser] 用户输入: {user_input}")
+                logger.debug(f"[IntentParser] 解析结果: task_type={task_type_str}, goal={parsed_goal}")
+
                 return TaskIntent(
-                    goal=result.get("goal", {"description": user_input}),
+                    goal=parsed_goal,
                     constraints=result.get("constraints", {}),
                     task_type=task_type,
                     raw_input=user_input,
-                    execution_steps=execution_steps,
                     error_message=error_message,
                 )
             else:
@@ -287,7 +302,6 @@ class IntentParser:
             constraints={},
             task_type=task_type,
             raw_input=str(data),
-            execution_steps=execution_steps,
         )
 
     def parse_natural_language(self, text: str) -> TaskIntent:

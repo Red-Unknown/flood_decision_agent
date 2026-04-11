@@ -8,8 +8,9 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
+from flood_decision_agent.agents.parameter_planner import ParameterPlanner
 from flood_decision_agent.agents.decision_chain import (
     DecisionChainGeneratorAgent,
 )
@@ -115,8 +116,95 @@ class VisualizedPipeline:
             task_graph_builder=task_graph_builder
         )
 
+        # 创建 ParameterPlanner（可选，用于参数规划）
+        # 注意：需要 LLM client 才能完全工作，这里创建实例但不做强依赖
+        self.parameter_planner = ParameterPlanner(
+            tool_registry=self.tool_registry,
+        )
+        self._on_clarification_needed: Optional[Callable] = None
+
         # 创建总结智能体
         self.summarizer = SummarizerAgent(enable_streaming=True)
+
+    def set_clarification_callback(self, callback: Callable) -> None:
+        """设置澄清回调函数
+
+        当 ParameterPlanner 需要用户澄清时，会调用此回调。
+
+        Args:
+            callback: 回调函数，签名为 (clarification_data: Dict) -> None
+        """
+        self._on_clarification_needed = callback
+        self.parameter_planner.on_clarification_needed = callback
+
+    def plan_parameters_for_graph(
+        self,
+        graph: TaskGraph,
+        intent: Any,
+        data_pool: SharedDataPool,
+    ) -> Dict[str, Any]:
+        """为任务图中的节点进行参数规划
+
+        这个方法同步包装了 ParameterPlanner 的异步调用。
+        如果需要完整的异步支持，应该使用 plan_parameters_for_graph_async。
+
+        Args:
+            graph: 任务图
+            intent: 任务意图
+            data_pool: 共享数据池
+
+        Returns:
+            Dict: 节点ID到ParameterPlan的映射
+        """
+        try:
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                plans = loop.run_until_complete(
+                    self._plan_parameters_async(graph, intent, data_pool)
+                )
+                return plans
+            finally:
+                loop.close()
+        except Exception as e:
+            print(f"[WARNING] 参数规划失败: {e}")
+            return {}
+
+    async def _plan_parameters_async(
+        self,
+        graph: TaskGraph,
+        intent: Any,
+        data_pool: SharedDataPool,
+    ) -> Dict[str, Any]:
+        """异步参数规划"""
+        from flood_decision_agent.agents.decision_chain.task_decomposer import TaskNodeInfo
+
+        plans = {}
+        nodes = graph.get_all_nodes()
+
+        for node in nodes:
+            if node.status == NodeStatus.PENDING:
+                task_node_info = TaskNodeInfo(
+                    task_id=node.id,
+                    task_type=node.task_type or "unknown",
+                    description=node.description or "",
+                    inputs=node.inputs or [],
+                    outputs=node.outputs or [],
+                )
+
+                try:
+                    async for plan in self.parameter_planner.plan_parameters(
+                        task_nodes=[task_node_info],
+                        intent=intent,
+                        data_pool=data_pool,
+                    ):
+                        if hasattr(plan, 'node_id'):
+                            plans[plan.node_id] = plan
+                except Exception as e:
+                    print(f"[WARNING] 为节点 {node.id} 进行参数规划时出错: {e}")
+
+        return plans
 
     def run(self, task_request: Dict[str, Any]) -> VisualizedPipelineResult:
         """执行可视化 Pipeline.
@@ -185,12 +273,43 @@ class VisualizedPipeline:
                 input_summary=f"task_type={task_request.get('type', 'unknown')}",
             )
 
+        # 从 metadata 获取 intent 用于参数规划
+        intent = metadata.get("intent")
+
         # 创建数据池并执行
         data_pool = SharedDataPool()
+
+        # 参数规划（可选功能，如果 LLM client 可用则执行）
+        parameter_plans = {}
+        if intent and self.parameter_planner and self.parameter_planner.llm_client:
+            try:
+                parameter_plans = self.plan_parameters_for_graph(graph, intent, data_pool)
+                if parameter_plans:
+                    print(f"[INFO] 参数规划完成，为 {len(parameter_plans)} 个节点生成了参数计划")
+            except Exception as e:
+                print(f"[WARNING] 参数规划跳过: {e}")
 
         # 保存用户原始输入到数据池
         if input_type == "natural_language":
             data_pool.set("raw_user_input", user_input)
+            
+            # 从 intent.goal 提取参数并存储到 data_pool
+            # metadata["intent"] 可能是一个字典（包含 task_type, goal, constraints）或 TaskIntent 对象
+            if intent:
+                if hasattr(intent, 'goal'):
+                    # TaskIntent 对象
+                    intent_goal = intent.goal
+                elif isinstance(intent, dict):
+                    # 字典格式
+                    intent_goal = intent.get('goal', {})
+                else:
+                    intent_goal = {}
+                
+                if intent_goal:
+                    for key, value in intent_goal.items():
+                        if value and isinstance(value, str) and value.strip():
+                            data_pool.set(key, value, source="intent_goal")
+                            print(f"[INFO] 从 intent.goal 提取参数: {key}={value}")
         else:
             data_pool.set("raw_user_input", str(task_request))
         data_pool.set("input_type", input_type)

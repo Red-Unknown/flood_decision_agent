@@ -18,7 +18,7 @@ from flood_decision_agent.agents.task_executor.mcp_integration import (
     setup_mcp_for_executor,
 )
 from flood_decision_agent.core.shared_data_pool import SharedDataPool
-from flood_decision_agent.infra.logging import setup_logging
+from flood_decision_agent.infrastructure.logging import setup_logging
 
 # 配置日志
 setup_logging()

@@ -7,7 +7,6 @@ import os
 
 URI = "ws://localhost:8001/ws/chat/test_logging_001"
 
-
 async def test_weather_query():
     """测试查询金坛天气"""
     print(f"连接到: {URI}")
@@ -73,3 +72,4 @@ if __name__ == "__main__":
         print("\n\n👋 测试结束")
     except Exception as e:
         print(f"\n❌ 错误: {e}")
+

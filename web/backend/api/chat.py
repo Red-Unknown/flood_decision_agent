@@ -12,6 +12,7 @@ from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps, fa
 import os
 import sys
 import time
+import uuid
 from typing import AsyncGenerator, Dict, List, Optional, Callable, Any
 from dataclasses import dataclass, field
 from enum import Enum
@@ -46,6 +47,15 @@ class ChatMessage(BaseModel):
     timestamp: float = Field(..., description="时间戳")
 
 
+class ClarificationSubmitRequest(BaseModel):
+    """用户提交澄清答案的请求"""
+
+    request_id: str = Field(..., description="澄清请求ID")
+    conversation_id: str = Field(..., description="对话ID")
+    answers: Dict[str, Any] = Field(..., description="参数名到答案的映射")
+    timestamp: float = Field(..., description="时间戳")
+
+
 class ProcessStage(str, Enum):
     """处理阶段."""
     TASK_ACCEPTED = "task_accepted"           # 任务接取
@@ -55,6 +65,9 @@ class ProcessStage(str, Enum):
     NODE_FAILED = "node_failed"               # 节点失败
     AGENT_CALLED = "agent_called"             # Agent调用
     PIPELINE_COMPLETED = "pipeline_completed" # 流程完成
+    CLARIFICATION_NEEDED = "clarification_needed"  # 需要用户澄清
+    CLARIFICATION_ACCEPTED = "clarification_accepted"  # 澄清已接受
+    CLARIFICATION_REJECTED = "clarification_rejected"  # 澄清被拒绝
 
 
 @dataclass
@@ -68,6 +81,7 @@ class ProcessEvent:
 # 内存存储
 _messages: Dict[str, List[ChatMessage]] = {}
 _process_events: Dict[str, List[ProcessEvent]] = {}  # 过程性事件存储
+_clarification_requests: Dict[str, Dict[str, Any]] = {}  # 澄清请求存储
 
 
 class WebEventCollector:
@@ -449,6 +463,75 @@ def format_pipeline_result_to_markdown(result: Dict, user_input: str, events: Li
     return "\n".join(lines)
 
 
+def create_clarification_request(
+    conversation_id: str,
+    clarification_data: Dict[str, Any],
+) -> str:
+    """创建澄清请求并存储
+
+    Args:
+        conversation_id: 对话ID
+        clarification_data: 澄清请求数据
+
+    Returns:
+        request_id: 澄清请求ID
+    """
+    request_id = clarification_data.get("request_id", str(uuid.uuid4()))
+
+    clar_req = {
+        "request_id": request_id,
+        "conversation_id": conversation_id,
+        "node_id": clarification_data.get("node_id", ""),
+        "task_type": clarification_data.get("task_type", ""),
+        "missing_params": clarification_data.get("missing_params", []),
+        "generated_questions": clarification_data.get("generated_questions", []),
+        "context": clarification_data.get("context", {}),
+        "status": "pending",
+        "created_at": time.time(),
+    }
+
+    _clarification_requests[request_id] = clar_req
+    return request_id
+
+
+async def send_clarification_event(
+    conversation_id: str,
+    clarification_data: Dict[str, Any],
+) -> str:
+    """发送澄清请求事件到前端
+
+    Args:
+        conversation_id: 对话ID
+        clarification_data: 澄清请求数据
+
+    Returns:
+        request_id: 澄清请求ID
+    """
+    request_id = create_clarification_request(conversation_id, clarification_data)
+
+    event = {
+        "type": "clarification_request",
+        "request_id": request_id,
+        "conversation_id": conversation_id,
+        "node_id": clarification_data.get("node_id", ""),
+        "task_type": clarification_data.get("task_type", ""),
+        "missing_params": clarification_data.get("missing_params", []),
+        "generated_questions": clarification_data.get("generated_questions", []),
+        "context": clarification_data.get("context", {}),
+        "timestamp": time.time(),
+    }
+
+    from src.flood_decision_agent.shared.utils.json_utils import fast_json_dumps
+
+    _current_clarification_request_id = request_id
+
+    yield f"data: {fast_json_dumps(event, ensure_ascii=False)}\n\n"
+    await asyncio.sleep(0.01)
+
+
+_current_clarification_request_id: Optional[str] = None
+
+
 async def stream_chat_response(
     message: str,
     conversation_id: Optional[str] = None,
@@ -559,6 +642,16 @@ async def stream_chat_response(
             enable_visualization=True,
         )
 
+        # 设置澄清回调：当 ParameterPlanner 需要用户澄清时触发
+        async def on_clarification(clarification_data):
+            """处理澄清请求 - 通过 WebSocket 发送给前端"""
+            request_id = create_clarification_request(conversation_id, clarification_data)
+            print(f"[CLARIFICATION] 触发澄清请求: {request_id}")
+
+        # 注意：目前 ParameterPlanner 没有 llm_client，不会实际触发澄清
+        # 未来如果需要完整澄清流程，需要传入 LLM client
+        # pipeline.set_clarification_callback(on_clarification)
+
         # 执行Pipeline
         try:
             result = pipeline.run({
@@ -624,6 +717,9 @@ async def stream_chat_response(
         error_message = f"处理出错: {str(e)}"
         logger.error(f"Error: {error_message}")
         logger.error(traceback.format_exc())
+        # 打印到 stderr 以便调试
+        print(f"[DEBUG ERROR] {error_message}", flush=True)
+        print(traceback.format_exc(), flush=True)
         yield f"data: {fast_json_dumps({'type': 'error', 'content': error_message}, ensure_ascii=False)}\n\n"
 
 
@@ -698,3 +794,72 @@ async def clear_messages(conversation_id: str) -> dict:
         _process_events[conversation_id] = []
 
     return {"success": True, "message": "对话已清空"}
+
+
+@router.post("/chat/clarification")
+async def submit_clarification(request: ClarificationSubmitRequest) -> Dict[str, Any]:
+    """提交用户澄清答案
+
+    当 ParameterPlanner 需要用户澄清缺失参数时，前端调用此接口提交用户答案。
+    """
+    request_id = request.request_id
+    conversation_id = request.conversation_id
+
+    if request_id not in _clarification_requests:
+        return {
+            "success": False,
+            "error": {
+                "code": "CLARIFICATION_NOT_FOUND",
+                "message": f"澄清请求不存在或已过期: {request_id}"
+            }
+        }
+
+    clar_req = _clarification_requests[request_id]
+
+    if clar_req.get("conversation_id") != conversation_id:
+        return {
+            "success": False,
+            "error": {
+                "code": "CONVERSATION_MISMATCH",
+                "message": "对话ID不匹配"
+            }
+        }
+
+    clar_req["answers"] = request.answers
+    clar_req["status"] = "answered"
+    clar_req["answered_at"] = time.time()
+
+    return {
+        "success": True,
+        "data": {
+            "status": "accepted",
+            "message": "答案已接收，继续执行任务",
+            "request_id": request_id,
+        }
+    }
+
+
+@router.get("/chat/clarification/{request_id}")
+async def get_clarification_status(request_id: str) -> Dict[str, Any]:
+    """获取澄清请求状态
+
+    前端可以轮询此接口检查澄清请求是否已被回答。
+    """
+    if request_id not in _clarification_requests:
+        return {
+            "success": False,
+            "error": {
+                "code": "CLARIFICATION_NOT_FOUND",
+                "message": "澄清请求不存在"
+            }
+        }
+
+    clar_req = _clarification_requests[request_id]
+    return {
+        "success": True,
+        "data": {
+            "request_id": request_id,
+            "status": clar_req.get("status", "pending"),
+            "question": clar_req.get("generated_questions", []),
+        }
+    }

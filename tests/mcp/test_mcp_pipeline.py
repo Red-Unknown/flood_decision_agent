@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flood_decision_agent.app.real_pipeline import RealPipeline
 from flood_decision_agent.agents.decision_chain.mode_detector import ModeDetector
-from flood_decision_agent.infra.logging import setup_logging
+from flood_decision_agent.infrastructure.logging import setup_logging
 
 # 配置日志
 setup_logging()

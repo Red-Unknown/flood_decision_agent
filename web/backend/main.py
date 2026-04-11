@@ -76,11 +76,13 @@ from loguru import logger
 LOG_DIR = Path("f:/college/sophomore/academic/logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+from flood_decision_agent.infrastructure.logging import CONSOLE_FORMAT, FILE_FORMAT
+
 logger.remove()
 logger.add(
     sink=str(LOG_DIR / f"web-{date.today().isoformat()}.log"),
-    level="INFO",
-    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+    level="DEBUG",
+    format=FILE_FORMAT,
     rotation="10 MB",
     retention="7 days",
     compression="zip",
@@ -89,10 +91,10 @@ logger.add(
 )
 logger.add(
     sink=sys.stdout,
-    level="INFO",
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-    backtrace=False,
-    diagnose=False,
+    level="DEBUG",
+    format=CONSOLE_FORMAT,
+    backtrace=True,
+    diagnose=True,
 )
 
 import logging

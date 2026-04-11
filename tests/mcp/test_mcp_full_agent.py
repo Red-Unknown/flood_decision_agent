@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flood_decision_agent.mcp.clients.base import MCPClientManager
 from flood_decision_agent.mcp.adapters.tool_adapter import MCPToolAdapter
 from flood_decision_agent.core.shared_data_pool import SharedDataPool
-from flood_decision_agent.infra.logging import setup_logging
+from flood_decision_agent.infrastructure.logging import setup_logging
 
 setup_logging()
 

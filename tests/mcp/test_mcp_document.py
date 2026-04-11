@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flood_decision_agent.mcp.clients.base import MCPClientManager
-from flood_decision_agent.infra.logging import setup_logging
+from flood_decision_agent.infrastructure.logging import setup_logging
 
 # 配置日志
 setup_logging()

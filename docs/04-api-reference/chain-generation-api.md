@@ -68,11 +68,21 @@ execution_progress → execution_complete → assistant_message
 confirm_spec → spec_confirmed → task_extracting → chain_generation_stage → 
 task_graph_generated → chain_generated → execution_started → task_update(with detail) → 
 execution_progress → execution_complete → assistant_message
+
+【用户澄清流程事件流】
+（当 ParameterPlanner 发现缺少必需参数时）
+execution_started → clarification_request → （等待用户回答）→ clarification_response → 
+clarification_accepted → 继续执行 → execution_complete → assistant_message
+
+【用户澄清被拒绝事件流】
+clarification_request → clarification_response → clarification_rejected → 
+clarification_request → （重新等待用户回答）
 ```
 
 **重要说明**:
 - `execution_complete` 事件在 `assistant_message` 之前发送，包含执行结果汇总
 - `assistant_message` 为最终 AI 回复，包含执行结果的友好展示
+- 用户澄清流程会暂停执行，等待用户回答后继续
 
 ***
 
@@ -197,6 +207,34 @@ execution_progress → execution_complete → assistant_message
   "timestamp": 1704153600.0
 }
 ```
+
+***
+
+#### 6. 提交澄清答案（用户澄清流程）
+
+当收到服务端的 `clarification_request` 事件后，用户可以通过此消息提交答案。
+
+```json
+{
+  "type": "clarification_response",
+  "request_id": "clar_req_abc123",
+  "conversation_id": "conv_xyz789",
+  "answers": {
+    "city": "武汉"
+  },
+  "timestamp": 1704153600.0
+}
+```
+
+**字段说明**:
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| type | string | 是 | 固定值: `clarification_response` |
+| request_id | string | 是 | 澄清请求ID，从 `clarification_request` 事件获取 |
+| conversation_id | string | 是 | 对话ID |
+| answers | object | 是 | 参数名到答案的映射 |
+| timestamp | number | 是 | Unix时间戳 |
 
 ***
 
@@ -570,7 +608,112 @@ execution_progress → execution_complete → assistant_message
 
 ***
 
-#### 16. AI 回复
+#### 16. 用户澄清请求
+
+当 ParameterPlanner 发现缺少必需参数时，服务端推送此事件请求用户澄清。
+
+```json
+{
+  "type": "clarification_request",
+  "request_id": "clar_req_abc123",
+  "conversation_id": "conv_xyz789",
+  "node_id": "task_001",
+  "task_type": "rainfall_analysis",
+  "missing_params": [
+    {
+      "param_name": "city",
+      "param_type": "string",
+      "description": "请输入要分析的城市名称",
+      "required": true,
+      "default_value": null
+    }
+  ],
+  "generated_questions": [
+    "请提供要分析的城市名称（默认值: 北京）"
+  ],
+  "context": {
+    "current_params": [
+      {"name": "time_range", "value": "24h"}
+    ],
+    "task_description": "分析指定城市的降雨情况"
+  },
+  "timestamp": 1704153600.0
+}
+```
+
+**字段说明**:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| type | string | 固定值: `clarification_request` |
+| request_id | string | 澄清请求唯一标识 |
+| conversation_id | string | 对话ID |
+| node_id | string | 关联的节点ID |
+| task_type | string | 任务类型 |
+| missing_params | array | 缺失参数列表 |
+| generated_questions | array | LLM生成的自然语言问题 |
+| context | object | 上下文信息 |
+| timestamp | number | Unix时间戳 |
+
+***
+
+#### 17. 澄清答案已接收
+
+用户提交澄清答案后，服务端确认接收。
+
+```json
+{
+  "type": "clarification_accepted",
+  "request_id": "clar_req_abc123",
+  "conversation_id": "conv_xyz789",
+  "accepted_params": [
+    {"name": "city", "value": "武汉", "source": "user_provided"}
+  ],
+  "timestamp": 1704153600.0
+}
+```
+
+**字段说明**:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| type | string | 固定值: `clarification_accepted` |
+| request_id | string | 澄清请求ID |
+| conversation_id | string | 对话ID |
+| accepted_params | array | 被接受的参数列表 |
+| timestamp | number | Unix时间戳 |
+
+***
+
+#### 18. 澄清答案被拒绝
+
+用户提交的答案无效时，服务端拒绝并提示重新输入。
+
+```json
+{
+  "type": "clarification_rejected",
+  "request_id": "clar_req_abc123",
+  "conversation_id": "conv_xyz789",
+  "reason": "invalid_answer",
+  "message": "提供的答案无效，请重新输入",
+  "timestamp": 1704153600.0
+}
+```
+
+**字段说明**:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| type | string | 固定值: `clarification_rejected` |
+| request_id | string | 澄清请求ID |
+| conversation_id | string | 对话ID |
+| reason | string | 拒绝原因 |
+| message | string | 提示信息 |
+| timestamp | number | Unix时间戳 |
+
+***
+
+#### 19. AI 回复
 
 ```json
 {

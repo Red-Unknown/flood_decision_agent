@@ -20,7 +20,7 @@ from loguru import logger
 logger.remove()  # 移除所有处理器
 
 from flood_decision_agent.app.visualized_pipeline import run_visualized_pipeline
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 
 
 def check_api_key():

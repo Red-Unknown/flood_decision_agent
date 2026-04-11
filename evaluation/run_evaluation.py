@@ -19,6 +19,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 # 检查环境变量
 if not os.getenv("KIMI_API_KEY", "").strip():
@@ -37,7 +38,7 @@ from flood_decision_agent.evaluation import (
 from flood_decision_agent.evaluation.test_case import (
     create_default_flood_dispatch_test_suite,
 )
-from flood_decision_agent.infra.logging import setup_logging
+from flood_decision_agent.infrastructure.logging import setup_logging
 
 
 def run_evaluation(

@@ -13,7 +13,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(project_root, "src"))
 
 from flood_decision_agent.app.visualized_pipeline import run_visualized_pipeline
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 from flood_decision_agent.visualization.terminal import TerminalVisualizer
 
 

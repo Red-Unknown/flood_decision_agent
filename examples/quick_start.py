@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from flood_decision_agent.app.pipeline import run_minimal_pipeline  # noqa: E402
-from flood_decision_agent.infra.logging import setup_logging  # noqa: E402
+from flood_decision_agent.infrastructure.logging import setup_logging  # noqa: E402
 
 
 def main() -> None:

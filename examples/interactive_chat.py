@@ -10,7 +10,7 @@ from typing import Optional
 
 from flood_decision_agent.app.visualized_pipeline import VisualizedPipeline
 from flood_decision_agent.conversation.manager import ConversationManager
-from flood_decision_agent.infra.kimi_guard import require_kimi_api_key
+from flood_decision_agent.infrastructure.llm.guards.kimi_guard import require_kimi_api_key
 
 
 def create_pipeline():
